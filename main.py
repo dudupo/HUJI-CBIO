@@ -39,6 +39,20 @@ def local_base_case(seq1: str, seq2: str, mat: dict)
     table = np.zeros(shape, dtype=float)
     return table
 
+def overlap_base_case(seq1: str, seq2: str, mat: dict)
+    """
+    given the sequences for the program return a matrix field according to the base case and the
+    score matrix for the overlap alignment
+    :param seq1:the first sequence
+    :param seq1:the second sequence
+    :param mat:the score matrix that was returned from read_matrix function
+    :return:ndArray with sides the size of seq1 and seq2 and the values in the leftmost column will be 0 
+    """
+    shape = (len(seq1), len(seq2))
+    # todo is this faster then using np.empty and iterating with a python loop over the  leftmost column?
+    table = np.zeros(shape, dtype=float)
+    return table
+
 
 def global_base_case(seq1: str, seq2: str, mat: dict):
     """
