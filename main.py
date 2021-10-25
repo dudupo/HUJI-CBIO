@@ -1,5 +1,6 @@
 import argparse
 from itertools import groupby
+
 import numpy as np
 
 
@@ -22,7 +23,24 @@ def load_matrix(path: str):
             mat[(char, col)] = float(val)
     return mat
 
-def global_base_case(seq1:str,seq2:str,mat:dict):
+
+def local_base_case(seq1: str, seq2: str, mat: dict)
+    """
+    given the sequences for the program return a matrix field according to the base case and the
+    score matrix for the local alignment
+    :param seq1:the first sequence
+    :param seq1:the second sequence
+    :param mat:the score matrix that was returned from read_matrix function
+    :return:ndArray with sides the size of seq1 and seq2 and the values in the leftmost column and upper most row will 
+    be 0 
+    """
+    shape = (len(seq1), len(seq2))
+    # todo is this faster then using np.empty and iterating with a python loop over the uppermost row an leftmost column?
+    table = np.zeros(shape, dtype=float)
+    return table
+
+
+def global_base_case(seq1: str, seq2: str, mat: dict):
     """
     given the sequences for the program return a matrix field according to the base case and the
     score matrix for the global alignment
@@ -32,12 +50,12 @@ def global_base_case(seq1:str,seq2:str,mat:dict):
     :return:ndArray with sides the size of seq1 and seq2 and the values in the leftmost column would be acording to the
     alignment of the beginning of seq1 with '-'
     """
-    shape = (len(seq1),len(seq2))
-    Table = np.empty(shape,dtype=float)
-    Table[0, 0] = mat[(seq1[0], '-')]
-    for row,char in enumerate(seq1[1:]):
-        Table[row,0] = mat[(char,'-')]+Table[row-1,0]
-    return Table
+    shape = (len(seq1), len(seq2))
+    table = np.empty(shape, dtype=float)
+    table[0, 0] = mat[(seq1[0], '-')]
+    for row, char in enumerate(seq1[1:]):
+        table[row, 0] = mat[(char, '-')] + table[row - 1, 0]
+    return table
 
 
 def fastaread(fasta_name):
