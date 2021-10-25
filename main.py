@@ -1,5 +1,6 @@
 import argparse
 from itertools import groupby
+import numpy as np
 
 
 def load_matrix(path: str):
@@ -20,6 +21,23 @@ def load_matrix(path: str):
         for val, col in zip(line[1:], alphabet):
             mat[(char, col)] = float(val)
     return mat
+
+def global_base_case(seq1:str,seq2:str,mat:dict):
+    """
+    given the sequences for the program return a matrix field according to the base case and the
+    score matrix for the global alignment
+    :param seq1:the first sequence
+    :param seq1:the second sequence
+    :param mat:the score matrix that was returned from read_matrix function
+    :return:ndArray with sides the size of seq1 and seq2 and the values in the leftmost column would be acording to the
+    alignment of the beginning of seq1 with '-'
+    """
+    shape = (len(seq1),len(seq2))
+    Table = np.empty(shape,dtype=float)
+    Table[0, 0] = mat[(seq1[0], '-')]
+    for row,char in enumerate(seq1[1:]):
+        Table[row,0] = mat[(char,'-')]+Table[row-1,0]
+    return Table
 
 
 def fastaread(fasta_name):
