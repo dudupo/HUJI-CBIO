@@ -103,7 +103,7 @@ def fill_cell_for_global(seq1: str, seq2: str, mat: dict, table, trace, i: int, 
     trace[i, j] = trace_val
 
 
-def fill_tabels_for_global(seq1: str, seq2: str, mat: dict, table, trace):
+def fill_tables_for_global(seq1: str, seq2: str, mat: dict, table, trace):
     """
     fill the whole table for the global aliment using fill_cell_for_global function and returns the trace and table for
     seq1 seq2
@@ -120,6 +120,22 @@ def fill_tabels_for_global(seq1: str, seq2: str, mat: dict, table, trace):
         for row in range(1, table.shape[0]):
             fill_cell_for_global(seq1, seq2, mat, table, trace, row, col)
     return trace, table
+#todo finish
+def extract_solution_global(seq1: str, seq2: str, mat: dict, table, trace):
+    """
+    extract the optimal global alignment for sqe1 seq2 based on table, trace
+    :param seq1:the first sequence
+    :param seq2:the second sequence
+    :param mat: the score matrix
+    :param table: the dynamic programming table for the best scores of partial alignments
+    :param trace:the matrix we use to indicate what is the partial aliment we used in order to get to this alignment
+    :return:trace and table
+    :return: two strings that are sqe1 and seq2 with '-' in them according to the optimal global alignment
+    """
+    i,j = table.shape[0]-1,table.shape[1]-1
+    str1,str2 = "",""
+    while not i==j==0:
+
 
 
 def fastaread(fasta_name):
