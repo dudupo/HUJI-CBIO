@@ -1,5 +1,6 @@
 import argparse
 from itertools import groupby
+from typing import List
 
 import numpy as np
 
@@ -24,7 +25,7 @@ def load_matrix(path: str):
     return mat
 
 
-def local_base_case(seq1: str, seq2: str, mat: dict)
+def local_base_case(seq1: str, seq2: str, mat: dict):
     """
     given the sequences for the program return a matrix field according to the base case and the
     score matrix for the local alignment
@@ -36,12 +37,12 @@ def local_base_case(seq1: str, seq2: str, mat: dict)
     """
     shape = (len(seq1), len(seq2))
     table = np.empty(shape, dtype=float)
-    table[:,0] = 0
+    table[:, 0] = 0
     table[0, :] = 0
     return table
 
 
-def overlap_base_case(seq1: str, seq2: str, mat: dict)
+def overlap_base_case(seq1: str, seq2: str, mat: dict):
     """
     given the sequences for the program return a matrix field according to the base case and the
     score matrix for the overlap alignment
@@ -51,7 +52,6 @@ def overlap_base_case(seq1: str, seq2: str, mat: dict)
     :return:ndArray with sides the size of seq1 and seq2 and the values in the leftmost column will be 0 
     """
     shape = (len(seq1), len(seq2))
-    # todo is this faster then using np.empty and iterating with a python loop over the leftmost column?
     table = np.empty(shape, dtype=float)
     table[:, 0] = 0
     return table
@@ -75,19 +75,51 @@ def global_base_case(seq1: str, seq2: str, mat: dict):
     return table
 
 
+def min_argmin(options: List[float]) -> tuple:
+    """
+    retuen the min value and its index from a array
+    :param options: a list with numbers
+    :return: min,argmin of the list
+    """
+    return np.min(options), np.argmin(options)
+
 
 def fill_cell_for_global(seq1: str, seq2: str, mat: dict, table, trace, i: int, j: int):
     """
-
-    :param seq1:
-    :param seq2:
-    :param mat:
-    :param table:
-    :param trace:
-    :param i:
-    :param j:
-    :return:
+    fill one cell of the matrix according to the global alignment algorithm
+    :param seq1:the first sequence
+    :param seq2: the second sequence
+    :param mat: the score matrix
+    :param table: the dynamic programming table for the best scores of partial alignments
+    :param trace:the matrix we use to indicate what is the partial aliment we used in order to get to this alignment
+    :param i:the row of the cell we wish to calculate
+    :param j:the column of the cell we wish to calculate
+    :return:none
     """
+    options = [table[i - 1, j] + mat[(seq1[i], '-')], table[i - 1, j - 1] + mat[(seq1[i], seq2[j])],
+               table[i, j - 1] + mat[(seq2[j], '-')]]
+    table_val, trace_val = min_argmin(options)
+    table[i, j] = table_val
+    trace[i, j] = trace_val
+
+
+def fill_tabels_for_global(seq1: str, seq2: str, mat: dict, table, trace):
+    """
+    fill the whole table for the global aliment using fill_cell_for_global function and returns the trace and table for
+    seq1 seq2
+    :param seq1:the first sequence
+    :param seq2:the second sequence
+    :param mat: the score matrix
+    :param table: the dynamic programming table for the best scores of partial alignments
+    :param trace:the matrix we use to indicate what is the partial aliment we used in order to get to this alignment
+    :return:trace and table
+    """
+    for col in range(1, table.shape[1]):
+        trace[0, col] = 2
+        table[0, col] = table[0, col - 1] + mat[(seq2[col], '-')]
+        for row in range(1, table.shape[0]):
+            fill_cell_for_global(seq1, seq2, mat, table, trace, row, col)
+    return trace, table
 
 
 def fastaread(fasta_name):
