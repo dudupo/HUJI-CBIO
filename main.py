@@ -35,8 +35,9 @@ def local_base_case(seq1: str, seq2: str, mat: dict)
     be 0 
     """
     shape = (len(seq1), len(seq2))
-    # todo is this faster then using np.empty and iterating with a python loop over the uppermost row an leftmost column?
-    table = np.zeros(shape, dtype=float)
+    table = np.empty(shape, dtype=float)
+    table[:,0] = 0
+    table[0, :] = 0
     return table
 
 
@@ -51,7 +52,8 @@ def overlap_base_case(seq1: str, seq2: str, mat: dict)
     """
     shape = (len(seq1), len(seq2))
     # todo is this faster then using np.empty and iterating with a python loop over the leftmost column?
-    table = np.zeros(shape, dtype=float)
+    table = np.empty(shape, dtype=float)
+    table[:, 0] = 0
     return table
 
 
@@ -71,10 +73,12 @@ def global_base_case(seq1: str, seq2: str, mat: dict):
     for row, char in enumerate(seq1[1:]):
         table[row, 0] = mat[(char, '-')] + table[row - 1, 0]
     return table
-#todo
-def fill_table_for_global(seq1: str, seq2: str, mat: dict,table,trace,i:int,j:int):
+
+
+
+def fill_cell_for_global(seq1: str, seq2: str, mat: dict, table, trace, i: int, j: int):
     """
-    fills the matrix acording to the
+
     :param seq1:
     :param seq2:
     :param mat:
@@ -84,6 +88,8 @@ def fill_table_for_global(seq1: str, seq2: str, mat: dict,table,trace,i:int,j:in
     :param j:
     :return:
     """
+
+
 def fastaread(fasta_name):
     """
     Read a fasta file. For each sequence in the file, yield the header and the actual sequence.
