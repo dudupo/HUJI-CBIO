@@ -120,7 +120,9 @@ def fill_tables_for_global(seq1: str, seq2: str, mat: dict, table, trace):
         for row in range(1, table.shape[0]):
             fill_cell_for_global(seq1, seq2, mat, table, trace, row, col)
     return trace, table
-#todo finish
+
+
+# todo finish
 def extract_solution_global(seq1: str, seq2: str, mat: dict, table, trace):
     """
     extract the optimal global alignment for sqe1 seq2 based on table, trace
@@ -132,10 +134,26 @@ def extract_solution_global(seq1: str, seq2: str, mat: dict, table, trace):
     :return:trace and table
     :return: two strings that are sqe1 and seq2 with '-' in them according to the optimal global alignment
     """
-    i,j = table.shape[0]-1,table.shape[1]-1
-    str1,str2 = "",""
-    while not i==j==0:
-
+    i, j = table.shape[0] - 1, table.shape[1] - 1
+    str1, str2 = "", ""
+    while not i == j == 0:
+        if trace[i, j] == 2:
+            str1 += '-'
+            str2 += seq2[j]
+            j-=1
+            continue
+        elif trace[i, j] == 1:
+            str1 += seq1[i]
+            str2 += seq2[j]
+            j -= 1
+            i-= 1
+            continue
+        else:
+            str1 += seq1[i]
+            str2 += '-'
+            i-= 1
+            continue
+    return str1[::-1],str2[::-1]
 
 
 def fastaread(fasta_name):
