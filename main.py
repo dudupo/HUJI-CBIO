@@ -3,6 +3,7 @@ from itertools import groupby
 from typing import List
 
 import numpy as np
+from numpy.core.fromnumeric import argmax
 
 
 def load_matrix(path: str):
@@ -67,11 +68,65 @@ def global_base_case(seq1: str, seq2: str, mat: dict):
     :return:ndArray with sides the size of seq1 and seq2 and the values in the leftmost column would be acording to the
     alignment of the beginning of seq1 with '-'
     """
+
+    trace = np.ones( len(seq1), len(seq2))
+    cost  = np.zeros( len(seq1), len(seq2)) 
+
+    def reqursive_global(index1, index2):
+        
+        options = [ ]
+
+        def check(index, seq):
+            return (index + 1) < len(seq)
+
+        def rightdown(options):
+            reqursive_global(index1+1, index2+1)
+            options.append(
+                mat[(seq1[index1], seq2[index2])] +
+                 cost[index1+1][index2+1])
+        
+        def down(options):
+            reqursive_global(index1+1,   index2)
+            options.append(
+                mat[(seq1[index1], '-')] +
+                 cost[index1+1][index2])
+
+        
+        def right(options):
+            reqursive_global(index1,   index2+1)
+            options.append(
+                mat[('-', seq1[index2])] +
+                 cost[index1][index2+1])
+        def stop(options):
+            pass
+        
+
+        u =  (check(index1,seq1) , check(index2,seq2 ))
+
+        {
+            (True,  True)    : rightdown,
+            (True,  False)   : right,
+            (False, True)    : down,
+            (False, False)   : stop
+
+        }[u](options)
+
+        if len(options == 0):
+            return
+        else :
+            trace[index1][index2] = argmax(options)
+            cost[index1][index2]  = max(options)
+
+    reqursive_global(0,0)
+
+    print(cost, trace)
+    exit(1)
+
     shape = (len(seq1), len(seq2))
     table = np.empty(shape, dtype=float)
     table[0, 0] = mat[(seq1[0], '-')]
     for row, char in enumerate(seq1[1:]):
-        table[row, 0] = mat[(char, '-')] + table[row - 1, 0]
+        table[row, 0] =  mat[(char, '-')] + table[row - 1, 0]
     return table
 
 
@@ -174,16 +229,27 @@ def fastaread(fasta_name):
 def general_alignment():
     pass
 
-def global_alignment(seq_a, seq_b):
-    print(seq_a)
-    print(seq_b)
+def global_alignment(seq_a, seq_b, mat):
+    global_base_case(seq_a, seq_b, mat)
     return seq_a 
 
 def func_NotImplementedError():
     raise NotImplementedError
 
+
+import csv
+def parse_matrix(scorefile):
+    ret = []
+    with open(scorefile) as fd:
+        rd = csv.reader(fd, delimiter="\t", quotechar='"')
+        rd.__next__()
+        for i, row in enumerate(rd):
+            ret.append( np.array( row[1:], dtype=float ))
+    return np.array(ret)
+
 def main():
     a = fastaread("ex1/fastas/HomoSapiens-SHH.fasta").__next__()[1]
+    print(a)
     parser = argparse.ArgumentParser()
     parser.add_argument('seq_a', help='Path to first FASTA file (e.g. fastas/HomoSapiens-SHH.fasta)')
     parser.add_argument('seq_b', help='Path to second FASTA file')
@@ -192,17 +258,22 @@ def main():
                         default='score_matrix.tsv')
     command_args = parser.parse_args()
     
-
-    seq_a, seq_b  = list(fastaread(command_args.seq_a)) , list(fastaread(command_args.seq_b)) 
+    # print(fastaread(command_args.seq_a).__next__()[1])
+    seq_a, seq_b  = fastaread(command_args.seq_a).__next__()[1], fastaread(command_args.seq_b).__next__()[1]
+    print(seq_a, seq_b)
+    mat = parse_matrix(command_args.score)
+    print(mat)
+    print( command_args.score)
     
-    if command_args.align_type == "global":
-        alignment = global_alignment(seq_a, seq_b)
+    
+    #       --- To do ---- 
+    #       -> handle the if condition, (doesn't work for me).
+    #
+    # if str(command_args.align_type) == 'global':
+        
+    
+    alignment = global_alignment(seq_a, seq_b, command_args.score)
 
-    # alignment =  { 
-    #                 "global"    : global_alignment, 
-    #                 "local"     : func_NotImplementedError,
-    #                 "overlap"   : func_NotImplementedError
-    #             }[f"{command_args.align_type}"](seq_a, seq_b)
     
 if __name__ == '__main__':
     main()
