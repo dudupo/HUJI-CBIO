@@ -170,6 +170,18 @@ def fastaread(fasta_name):
         yield header, seq
 
 
+
+def general_alignment():
+    pass
+
+def global_alignment(seq_a, seq_b):
+    print(seq_a)
+    print(seq_b)
+    return seq_a 
+
+def func_NotImplementedError():
+    raise NotImplementedError
+
 def main():
     a = fastaread("ex1/fastas/HomoSapiens-SHH.fasta").__next__()[1]
     parser = argparse.ArgumentParser()
@@ -179,14 +191,18 @@ def main():
     parser.add_argument('--score', help='Score matrix in.tsv format (default is score_matrix.tsv) ',
                         default='score_matrix.tsv')
     command_args = parser.parse_args()
-    if command_args.align_type == 'global':
-        raise NotImplementedError
-    elif command_args.align_type == 'local':
-        raise NotImplementedError
-    elif command_args.align_type == 'overlap':
-        raise NotImplementedError
-    # print the best alignment and score
+    
 
+    seq_a, seq_b  = list(fastaread(command_args.seq_a)) , list(fastaread(command_args.seq_b)) 
+    
+    if command_args.align_type == "global":
+        alignment = global_alignment(seq_a, seq_b)
 
+    # alignment =  { 
+    #                 "global"    : global_alignment, 
+    #                 "local"     : func_NotImplementedError,
+    #                 "overlap"   : func_NotImplementedError
+    #             }[f"{command_args.align_type}"](seq_a, seq_b)
+    
 if __name__ == '__main__':
     main()
