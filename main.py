@@ -69,7 +69,7 @@ def global_base_case(seq1: str, seq2: str, mat: dict):
     alignment of the beginning of seq1 with '-'
     """
     _maxlen = max(len(seq1), len(seq2))
-    _shape = (2*_maxlen + 1 , 2*_maxlen + 1)
+    _shape =  (len(seq1), len(seq2)) #(2*_maxlen + 1 , 2*_maxlen + 1)
     trace = np.ones( _shape)
     cost  = np.zeros(_shape)
 
@@ -115,14 +115,36 @@ def global_base_case(seq1: str, seq2: str, mat: dict):
             options.append(-np.inf)
             options.append(-np.inf)
             right(options)
-
-        if u == (False, False):
+        else:
             return
-        else :
-            trace[index1][index2] = argmax(options)
-            cost[index1][index2]  = max(options)
+        # else :
+        cost[index1][index2]  = max(options)
 
     reqursive_global(0,0)
+    
+    for i in reversed(range(len(seq1))):
+        for j in reversed(range(len(seq2))):
+            options = [ ]
+            
+            if i-1 >= 0 and j-1 >= 0:
+                options.append( cost[i-1][j-1] )
+            else:
+                options.append( -np.inf )
+            
+            if i >= 0 and j-1 >= 0:
+                options.append( cost[i][j-1] )
+            else:
+                options.append( -np.inf )
+            
+            if i-1 >= 0 and j >= 0:
+                options.append( cost[i-1][j] )
+            else:
+                options.append( -np.inf )
+            
+
+            trace[i][j] = argmax(options)
+
+    # trace[index1][index2] = argmax(options)
     print(seq1)
     print(seq2)
     print(cost)
@@ -198,15 +220,16 @@ def extract_solution_global(seq1: str, seq2: str, mat: dict, table, trace):
     :return:trace and table
     :return: two strings that are sqe1 and seq2 with '-' in them according to the optimal global alignment
     """
-    i, j = table.shape[0] - 1, table.shape[1] - 1
+    i, j =  table.shape[0] - 1, table.shape[1] - 1
     str1, str2 = "", ""
     while not i == j == 0:
-        if trace[i, j] == 2:
+        if trace[i, j] == 1:
             str1 += '-'
             str2 += seq2[j]
             j-=1
             continue
-        elif trace[i, j] == 1:
+        # change
+        elif trace[i, j] == 0:
             str1 += seq1[i]
             str2 += seq2[j]
             j -= 1
@@ -239,7 +262,10 @@ def general_alignment():
     pass
 
 def global_alignment(seq_a, seq_b, mat):
-    global_base_case(seq_a, seq_b, mat)
+    table, trace = global_base_case(seq_a, seq_b, mat)
+    ret_seq1, ret_seq2 =  extract_solution_global( seq_a, seq_b, mat, table, trace )
+    print(ret_seq1)
+    print(ret_seq2)
     return seq_a 
 
 def func_NotImplementedError():
@@ -251,14 +277,6 @@ import sys
 
 sys.setrecursionlimit(50000)
 
-def parse_matrix(scorefile):
-    ret = []
-    with open(scorefile) as fd:
-        rd = csv.reader(fd, delimiter="\t", quotechar='"')
-        rd.__next__()
-        for i, row in enumerate(rd):
-            ret.append( np.array( row[1:], dtype=float ))
-    return np.array(ret)
 
 def main():
     a = fastaread("ex1/fastas/HomoSapiens-SHH.fasta").__next__()[1]
