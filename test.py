@@ -27,7 +27,7 @@ def sanity():
 	# result.stdout
 	seqs = gen_fastas_list()
 	
-	for testlen in [ 10 , 15, 20]:
+	for testlen in [ 1 , 2, 3, 4, 5, 6, 10, 20, 40, -1]:
 		system(f"python3 ./main.py --align_type=golbal --testlen={testlen} --score=./ex1/score_matrix.tsv {seqs[0]} {seqs[1]}")
 		matrix = load_matrix( "./ex1/score_matrix.tsv") 
 		seq_a, seq_b  = fastaread( seqs[0] ).__next__()[1], fastaread(seqs[1]).__next__()[1]
