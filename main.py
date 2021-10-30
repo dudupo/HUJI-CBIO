@@ -76,8 +76,6 @@ def global_base_case(seq1: str, seq2: str, mat: dict):
     for row, char in enumerate(seq1):
         cost[row+1, 0] =  mat[(char, '-')] + cost[row, 0]
     trace, cost = fill_tables_for_global(seq1, seq2, mat, cost, trace)
-    # print(trace)
-    # print(cost)
     return cost, trace
 
 def max_argmax(options: List[float]) -> tuple:
@@ -188,7 +186,6 @@ def general_alignment( seq_a, seq_b, mat, base_case_func, extract_func):
 
     table, trace = base_case_func(seq_a, seq_b, mat)
     ret_seq1, ret_seq2 = extract_func( seq_a, seq_b, mat, table, trace )
-    print()
     for upper_line, bottom_line in\
          zip( split_to_lines(ret_seq1), split_to_lines(ret_seq2) ):
         print(upper_line)
@@ -211,8 +208,6 @@ def overlap_alignment(seq_a, seq_b, mat):
          overlap_base_case, extract_solution_overlap)
     print("overlap:{0}".format(table[-1,-1]))
 
-
-
 import csv
 import sys
 
@@ -220,8 +215,6 @@ sys.setrecursionlimit(50000)
 
 
 def main():
-    a = fastaread("ex1/fastas/HomoSapiens-SHH.fasta").__next__()[1]
-    # print(a)
     parser = argparse.ArgumentParser()
     parser.add_argument('seq_a', help='Path to first FASTA file (e.g. fastas/HomoSapiens-SHH.fasta)')
     parser.add_argument('seq_b', help='Path to second FASTA file')
@@ -232,15 +225,9 @@ def main():
     parser.add_argument('--testlen', default=-1, required=False)
     command_args = parser.parse_args()
     
-    # print(fastaread(command_args.seq_a).__next__()[1])
     seq_a, seq_b  = fastaread(command_args.seq_a).__next__()[1], fastaread(command_args.seq_b).__next__()[1]
-    seq_a, seq_b = seq_a[:int(command_args.testlen)], seq_b[:int(command_args.testlen)]
-    
-    print(seq_a)
-    print(seq_b)
-    # print(seq_a, seq_b)
+    seq_a, seq_b = seq_a[:int(command_args.testlen)], seq_b[:int(command_args.testlen)]    
     mat = load_matrix(command_args.score)
-    # print(mat)
     
     alignment = global_alignment(seq_a, seq_b, mat)
 
