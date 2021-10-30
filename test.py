@@ -29,6 +29,7 @@ def sanity():
 	seq_a, seq_b  = fastaread( seqs[0] ).__next__()[1], fastaread(seqs[1]).__next__()[1]
 	for a in pairwise2.align.globaldx(seq_a[:testlen], seq_b[:testlen], matrix):
 		print(pairwise2.format_alignment(*a))
+		break
 	
 
 if __name__ == "__main__":

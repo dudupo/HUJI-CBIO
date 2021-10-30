@@ -68,7 +68,7 @@ def global_base_case(seq1: str, seq2: str, mat: dict):
     :return:ndArray with sides the size of seq1 and seq2 and the values in the leftmost column would be acording to the
     alignment of the beginning of seq1 with '-'
     """
-    shape = (len(seq1), len(seq2))
+    shape = (len(seq1)+1, len(seq2)+1)
     trace = np.empty(shape,dtype=np.int8)
     trace[:,0] =0
     cost = np.empty(shape, dtype=float)
@@ -109,8 +109,8 @@ def fill_cell_for_global(seq1: str, seq2: str, mat: dict, table, trace, i: int, 
     :param j:the column of the cell we wish to calculate
     :return:none
     """
-    options = [table[i - 1, j] + mat[(seq1[i], '-')], table[i - 1, j - 1] + mat[(seq1[i], seq2[j])],
-               table[i, j - 1] + mat[('-', seq2[j])]]
+    options = [table[i - 1, j] + mat[(seq1[i-1], '-')], table[i - 1, j - 1] + mat[(seq1[i-1], seq2[j-1])],
+               table[i, j - 1] + mat[('-', seq2[j-1])]]
     table_val, trace_val = max_argmax(options)
     table[i, j] = table_val
     trace[i, j] = trace_val
@@ -129,7 +129,7 @@ def fill_tables_for_global(seq1: str, seq2: str, mat: dict, table, trace):
     """
     for col in range(1, table.shape[1]):
         trace[0, col] = 2
-        table[0, col] = table[0, col - 1] + mat[(seq2[col], '-')]
+        table[0, col] = table[0, col - 1] + mat[(seq2[col-1], '-')]
         for row in range(1, table.shape[0]):
             fill_cell_for_global(seq1, seq2, mat, table, trace, row, col)
     return trace, table
@@ -152,18 +152,18 @@ def extract_solution_global(seq1: str, seq2: str, mat: dict, table, trace):
     while not i == j == 0:
         if trace[i, j] == 2:
             str1 += '-'
-            str2 += seq2[j]
+            str2 += seq2[j-1]
             j-=1
             continue
         # change
         elif trace[i, j] == 1:
-            str1 += seq1[i]
-            str2 += seq2[j]
+            str1 += seq1[i-1]
+            str2 += seq2[j-1]
             j -= 1
             i-= 1
             continue
         else:
-            str1 += seq1[i]
+            str1 += seq1[i-1]
             str2 += '-'
             i-= 1
             continue
