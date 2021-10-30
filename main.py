@@ -73,8 +73,8 @@ def global_base_case(seq1: str, seq2: str, mat: dict):
     trace = np.zeros( _shape)
     cost  = np.zeros(_shape)
     trace, cost = fill_tables_for_global(seq1, seq2, mat, cost, trace)
-    print(cost)
-    print(trace)
+    # print(cost)
+    # print(trace)
     
     return cost, trace
     
@@ -191,8 +191,11 @@ def general_alignment():
 def global_alignment(seq_a, seq_b, mat):
     table, trace = global_base_case(seq_a, seq_b, mat)
     ret_seq1, ret_seq2 =  extract_solution_global( seq_a, seq_b, mat, table, trace )
+    print()
     print(ret_seq1)
     print(ret_seq2)
+    print()
+    print(table[-1,-1])
     return seq_a 
 
 def func_NotImplementedError():
@@ -214,19 +217,17 @@ def main():
     parser.add_argument('--align_type', help='Alignment type (e.g. local)', required=True)
     parser.add_argument('--score', help='Score matrix in.tsv format (default is score_matrix.tsv) ',
                         default='score_matrix.tsv')
+    
+    parser.add_argument('--testlen', default=-1, required=False)
     command_args = parser.parse_args()
     
     # print(fastaread(command_args.seq_a).__next__()[1])
     seq_a, seq_b  = fastaread(command_args.seq_a).__next__()[1], fastaread(command_args.seq_b).__next__()[1]
+    seq_a, seq_b = seq_a[:int(command_args.testlen)], seq_b[:int(command_args.testlen)]
+    
     # print(seq_a, seq_b)
     mat = load_matrix(command_args.score)
     print(mat)
-        
-    #       --- To do ---- 
-    #       -> handle the if condition, (doesn't work for me).
-    #
-    # if str(command_args.align_type) == 'global':
-        
     
     alignment = global_alignment(seq_a, seq_b, mat)
 

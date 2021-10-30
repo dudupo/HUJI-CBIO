@@ -1,7 +1,9 @@
 
 from os import system, walk
-
-
+from main import load_matrix, fastaread
+from Bio import pairwise2
+from Bio.SubsMat import MatrixInfo as matlist
+#format_alignment
 
 
 # HelicoverpaArmigera-cMyc.fasta  
@@ -21,8 +23,13 @@ def gen_fastas_list():
 
 def sanity():
 	seqs = gen_fastas_list()
-	system(f"python3 ./main.py --align_type=golbal --score=./ex1/score_matrix.tsv {seqs[0]} {seqs[1]} ")	
-
+	testlen = 20
+	system(f"python3 ./main.py --align_type=golbal --testlen={testlen} --score=./ex1/score_matrix.tsv {seqs[0]} {seqs[1]}")	
+	matrix = load_matrix( "./ex1/score_matrix.tsv") 
+	seq_a, seq_b  = fastaread( seqs[0] ).__next__()[1], fastaread(seqs[1]).__next__()[1]
+	for a in pairwise2.align.globaldx(seq_a[:testlen], seq_b[:testlen], matrix):
+		print(pairwise2.format_alignment(*a))
+	
 
 if __name__ == "__main__":
 	sanity()
