@@ -77,16 +77,6 @@ def global_base_case(seq1: str, seq2: str, mat: dict):
         cost[row, 0] =  mat[(char, '-')] + cost[row - 1, 0]
     trace, cost = fill_tables_for_global(seq1, seq2, mat, cost, trace)
     return cost, trace
-    
-    # exit(1)
-
-    # shape = (len(seq1), len(seq2))
-    # cost = np.empty(shape, dtype=float)
-    # cost[0, 0] = mat[(seq1[0], '-')]
-    # for row, char in enumerate(seq1[1:]):
-    #     cost[row, 0] =  mat[(char, '-')] + cost[row - 1, 0]
-    # return cost
-
 
 def max_argmax(options: List[float]) -> tuple:
     """
@@ -149,7 +139,7 @@ def extract_solution_global(seq1: str, seq2: str, mat: dict, table, trace):
     """
     i, j =  table.shape[0] - 1, table.shape[1] - 1
     str1, str2 = "", ""
-    while not i == j == 0:
+    while  i >= 0 and j >= 0:
         if trace[i, j] == 2:
             str1 += '-'
             str2 += seq2[j-1]
