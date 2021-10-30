@@ -68,27 +68,27 @@ def global_base_case(seq1: str, seq2: str, mat: dict):
     :return:ndArray with sides the size of seq1 and seq2 and the values in the leftmost column would be acording to the
     alignment of the beginning of seq1 with '-'
     """
-    _maxlen = max(len(seq1), len(seq2))
-    _shape =  (len(seq1), len(seq2)) #(2*_maxlen + 1 , 2*_maxlen + 1)
-    trace = np.zeros( _shape)
-    cost  = np.zeros(_shape)
+    shape = (len(seq1), len(seq2))
+    trace = np.empty(shape,dtype=np.int8)
+    trace[:,0] =0
+    cost = np.empty(shape, dtype=float)
+    cost[0, 0] = mat[(seq1[0], '-')]
+    for row, char in enumerate(seq1[1:]):
+        cost[row, 0] =  mat[(char, '-')] + cost[row - 1, 0]
     trace, cost = fill_tables_for_global(seq1, seq2, mat, cost, trace)
-    # print(cost)
-    # print(trace)
-    
     return cost, trace
     
     # exit(1)
 
     # shape = (len(seq1), len(seq2))
-    # table = np.empty(shape, dtype=float)
-    # table[0, 0] = mat[(seq1[0], '-')]
+    # cost = np.empty(shape, dtype=float)
+    # cost[0, 0] = mat[(seq1[0], '-')]
     # for row, char in enumerate(seq1[1:]):
-    #     table[row, 0] =  mat[(char, '-')] + table[row - 1, 0]
-    # return table
+    #     cost[row, 0] =  mat[(char, '-')] + cost[row - 1, 0]
+    # return cost
 
 
-def min_argmin(options: List[float]) -> tuple:
+def max_argmax(options: List[float]) -> tuple:
     """
     retuen the min value and its index from a array
     :param options: a list with numbers
@@ -111,7 +111,7 @@ def fill_cell_for_global(seq1: str, seq2: str, mat: dict, table, trace, i: int, 
     """
     options = [table[i - 1, j] + mat[(seq1[i], '-')], table[i - 1, j - 1] + mat[(seq1[i], seq2[j])],
                table[i, j - 1] + mat[('-', seq2[j])]]
-    table_val, trace_val = min_argmin(options)
+    table_val, trace_val = max_argmax(options)
     table[i, j] = table_val
     trace[i, j] = trace_val
 
