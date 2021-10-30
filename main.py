@@ -168,7 +168,7 @@ def extract_solution_global(seq1: str, seq2: str, mat: dict, table, trace):
             i-= 1
             continue
     return str1[::-1],str2[::-1]
-
+#fff
 
 def fastaread(fasta_name):
     """
