@@ -160,7 +160,13 @@ def extract_solution_global(seq1: str, seq2: str, mat: dict, table, trace):
             i-= 1
             continue
     return str1[::-1],str2[::-1]
-#fff
+
+def extract_solution_local(seq1: str, seq2: str, mat: dict, table, trace):
+    pass 
+
+def extract_solution_overlap(seq1: str, seq2: str, mat: dict, table, trace):
+    pass 
+
 
 def fastaread(fasta_name):
     """
@@ -175,25 +181,36 @@ def fastaread(fasta_name):
         seq = "".join(s.strip() for s in next(faiter))
         yield header, seq
 
-# def split_to_lines(_str):
-#     chunks, chunk_size = len(_str), len(x)/4
-#     [ x[i:i+chunk_size] for i in range(0, chunks, chunk_size) ]['qw', 'er', 'ty', 'ui']
+def general_alignment( seq_a, seq_b, mat, base_case_func, extract_func):
+    def split_to_lines(_str):
+        chunks, chunk_size = len(_str), 50
+        return [ _str[i:i+chunk_size] for i in range(0, chunks, chunk_size) ]
 
-def general_alignment():
-    pass
-
+    table, trace = base_case_func(seq_a, seq_b, mat)
+    ret_seq1, ret_seq2 = extract_func( seq_a, seq_b, mat, table, trace )
+    print()
+    for upper_line, bottom_line in\
+         zip( split_to_lines(ret_seq1), split_to_lines(ret_seq2) ):
+        print(upper_line)
+        print(bottom_line)
+        print()
+    return table
+    
 def global_alignment(seq_a, seq_b, mat):
-    table, trace = global_base_case(seq_a, seq_b, mat)
-    ret_seq1, ret_seq2 =  extract_solution_global( seq_a, seq_b, mat, table, trace )
-    print()
-    print(ret_seq1)
-    print(ret_seq2)
-    print()
-    print("score:{0}".format(table[-1,-1]))
-    return seq_a 
+    table = general_alignment(seq_a, seq_b, mat,\
+         global_base_case, extract_solution_global)
+    print("global:{0}".format(table[-1,-1]))
 
-def func_NotImplementedError():
-    raise NotImplementedError
+def local_alignment(seq_a, seq_b, mat):
+    table = general_alignment(seq_a, seq_b, mat,\
+         local_base_case, extract_solution_local)
+    print("local:{0}".format(table[-1,-1]))
+
+def overlap_alignment(seq_a, seq_b, mat):
+    table = general_alignment(seq_a, seq_b, mat,\
+         overlap_base_case, extract_solution_overlap)
+    print("overlap:{0}".format(table[-1,-1]))
+
 
 
 import csv
