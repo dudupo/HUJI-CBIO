@@ -88,7 +88,7 @@ def global_base_case(seq1: str, seq2: str, mat: dict):
     # return table
 
 
-def min_argmin(options: List[float]) -> tuple:
+def max_argmax(options: List[float]) -> tuple:
     """
     retuen the min value and its index from a array
     :param options: a list with numbers
@@ -111,7 +111,7 @@ def fill_cell_for_global(seq1: str, seq2: str, mat: dict, table, trace, i: int, 
     """
     options = [table[i - 1, j] + mat[(seq1[i], '-')], table[i - 1, j - 1] + mat[(seq1[i], seq2[j])],
                table[i, j - 1] + mat[('-', seq2[j])]]
-    table_val, trace_val = min_argmin(options)
+    table_val, trace_val = max_argmax(options)
     table[i, j] = table_val
     trace[i, j] = trace_val
 
