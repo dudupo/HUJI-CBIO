@@ -173,7 +173,10 @@ def fastaread(fasta_name):
         seq = "".join(s.strip() for s in next(faiter))
         yield header, seq
 
-
+def split_to_lines():
+    x = "qwertyui"
+    chunks, chunk_size = len(x), len(x)/4
+    [ x[i:i+chunk_size] for i in range(0, chunks, chunk_size) ]['qw', 'er', 'ty', 'ui']
 
 def general_alignment():
     pass
@@ -185,7 +188,7 @@ def global_alignment(seq_a, seq_b, mat):
     print(ret_seq1)
     print(ret_seq2)
     print()
-    print(table[-1,-1])
+    print("score:{0}".format(table[-1,-1]))
     return seq_a 
 
 def func_NotImplementedError():
@@ -219,7 +222,7 @@ def main():
     print(seq_b)
     # print(seq_a, seq_b)
     mat = load_matrix(command_args.score)
-    # print(mat)
+    print(mat)
     
     alignment = global_alignment(seq_a, seq_b, mat)
 
