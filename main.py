@@ -72,7 +72,7 @@ def global_base_case(seq1: str, seq2: str, mat: dict):
     trace = np.empty(shape,dtype=np.int8)
     trace[:,0] =0
     cost = np.empty(shape, dtype=float)
-    cost[0, 0] = mat[(seq1[0], '-')]
+    cost[0, 0] = 0 #mat[(seq1[0], '-')]
     for row, char in enumerate(seq1[1:]):
         cost[row, 0] =  mat[(char, '-')] + cost[row - 1, 0]
     trace, cost = fill_tables_for_global(seq1, seq2, mat, cost, trace)
@@ -225,9 +225,11 @@ def main():
     seq_a, seq_b  = fastaread(command_args.seq_a).__next__()[1], fastaread(command_args.seq_b).__next__()[1]
     seq_a, seq_b = seq_a[:int(command_args.testlen)], seq_b[:int(command_args.testlen)]
     
+    print(seq_a)
+    print(seq_b)
     # print(seq_a, seq_b)
     mat = load_matrix(command_args.score)
-    print(mat)
+    # print(mat)
     
     alignment = global_alignment(seq_a, seq_b, mat)
 
