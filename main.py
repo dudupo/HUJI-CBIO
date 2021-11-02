@@ -36,10 +36,11 @@ def local_base_case(seq1: str, seq2: str, mat: dict):
     be 0 
     """
     shape = (len(seq1) + 1, len(seq2) + 1)
-    table = np.empty(shape, dtype=float)
+    table = np.zeros(shape) 
     table[:, 0] = 0
     table[0, :] = 0
-    trace = np.ones(shape, dtype=np.int8) * 3
+    trace = np.zeros(shape) # np.ones(shape, dtype=np.int8) * 3
+    trace, table = fill_tables_for_local(seq1, seq2, mat, table, trace)
     return table, trace
 
 
@@ -80,7 +81,9 @@ def extract_solution_local(seq1: str, seq2: str, mat: dict, table, trace):
     :return:trace and table
     :return: two strings that are sqe1 and seq2 with '-' in them according to the optimal global alignment
     """
-    i, j = np.unravel_index(table.argmax(), table.shape())
+    print(table)
+    i, j = np.unravel_index(table.argmax(), table.shape)
+    score = table[i, j]
     str1, str2 = "", ""
     while i > 0 and j > 0:
         if trace[i, j] == 2:
@@ -104,7 +107,7 @@ def extract_solution_local(seq1: str, seq2: str, mat: dict, table, trace):
             str1 += seq1[i - 1]
             str2 += seq2[j - 1]
             break
-    return str1[::-1], str2[::-1]
+    return str1[::-1], str2[::-1], score
 
 
 def overlap_base_case(seq1: str, seq2: str, mat: dict):
@@ -256,7 +259,7 @@ def extract_solution_global(seq1: str, seq2: str, mat: dict, table, trace):
             str2 += '-'
             i -= 1
             continue
-    return str1[::-1], str2[::-1]
+    return str1[::-1], str2[::-1], table[-1,-1]
 
 
 def extract_solution_overlap(seq1: str, seq2: str, mat: dict, table, trace):
@@ -303,31 +306,27 @@ def general_alignment(seq_a, seq_b, mat, base_case_func, extract_func):
         return [_str[i:i + chunk_size] for i in range(0, chunks, chunk_size)]
 
     table, trace = base_case_func(seq_a, seq_b, mat)
-    ret_seq1, ret_seq2 = extract_func(seq_a, seq_b, mat, table, trace)
+    ret_seq1, ret_seq2, score = extract_func(seq_a, seq_b, mat, table, trace)
     for upper_line, bottom_line in \
             zip(split_to_lines(ret_seq1), split_to_lines(ret_seq2)):
         print(upper_line)
         print(bottom_line)
         print()
-    return table
+    return table, score
 
 
 def global_alignment(seq_a, seq_b, mat):
-    table = general_alignment(seq_a, seq_b, mat, \
+    table, score = general_alignment(seq_a, seq_b, mat, \
                               global_base_case, extract_solution_global)
-    print("global:{0}".format(table[-1, -1]))
-
-
+    print("global:{0}".format(score))
 def local_alignment(seq_a, seq_b, mat):
-    table = general_alignment(seq_a, seq_b, mat, \
+    table, score = general_alignment(seq_a, seq_b, mat, \
                               local_base_case, extract_solution_local)
-    print("local:{0}".format(table[-1, -1]))
-
-
+    print("local:{0}".format(score))
 def overlap_alignment(seq_a, seq_b, mat):
-    table = general_alignment(seq_a, seq_b, mat, \
+    table, score = general_alignment(seq_a, seq_b, mat, \
                               overlap_base_case, extract_solution_overlap)
-    print("overlap:{0}".format(table[-1, -1]))
+    print("overlap:{0}".format(score))
 
 
 import sys
@@ -345,14 +344,16 @@ def main():
 
     parser.add_argument('--testlen', default=-1, required=False)
     command_args = parser.parse_args()
-
+    
     seq_a, seq_b = fastaread(command_args.seq_a).__next__()[1], fastaread(command_args.seq_b).__next__()[1]
     seq_a, seq_b = seq_a[:int(command_args.testlen)], seq_b[:int(command_args.testlen)]
     mat = load_matrix(command_args.score)
 
-    alignment = global_alignment(seq_a, seq_b, mat)
-
+    if command_args.align_type == 'global':
+        alignment = global_alignment(seq_a, seq_b, mat)
+    elif command_args.align_type == 'local':
+        alignment = local_alignment(seq_a, seq_b, mat)
 
 if __name__ == '__main__':
     main()
-0
+
