@@ -39,7 +39,7 @@ def local_base_case(seq1: str, seq2: str, mat: dict):
     table = np.zeros(shape) 
     table[:, 0] = 0
     table[0, :] = 0
-    trace = np.zeros(shape) # np.ones(shape, dtype=np.int8) * 3
+    trace = np.ones(shape) * -1 # np.ones(shape, dtype=np.int8) * 3
     trace, table = fill_tables_for_local(seq1, seq2, mat, table, trace)
     return table, trace
 
@@ -50,7 +50,7 @@ def fill_cell_for_local(seq1, seq2, mat, table, trace, i, j):
     table_val, trace_val = max_argmax(options)
     table[i, j] = table_val
     trace[i, j] = trace_val
-    return
+    
 
 
 def fill_tables_for_local(seq1: str, seq2: str, mat: dict, table, trace):
@@ -81,7 +81,6 @@ def extract_solution_local(seq1: str, seq2: str, mat: dict, table, trace):
     :return:trace and table
     :return: two strings that are sqe1 and seq2 with '-' in them according to the optimal global alignment
     """
-    # print(table)
     i, j = np.unravel_index(table.argmax(), table.shape)
     score = table[i, j]
     str1, str2 = "", ""
@@ -91,21 +90,18 @@ def extract_solution_local(seq1: str, seq2: str, mat: dict, table, trace):
             str2 += seq2[j - 1]
             j -= 1
             continue
-        # change
         elif trace[i, j] == 1:
             str1 += seq1[i - 1]
             str2 += seq2[j - 1]
             j -= 1
             i -= 1
             continue
-        elif trace[i, j] == 2:
+        elif trace[i, j] == 0:
             str1 += seq1[i - 1]
             str2 += '-'
             i -= 1
             continue
-        else:  # trace[i, j] == 3
-            str1 += seq1[i - 1]
-            str2 += seq2[j - 1]
+        else: 
             break
     return str1[::-1], str2[::-1], score
 
@@ -125,10 +121,8 @@ def overlap_base_case(seq1: str, seq2: str, mat: dict):
     trace = np.zeros(shape)
     table[:, 0] = 0
     trace, table = fill_tables_for_overlap(seq1, seq2, mat, table, trace)
-    # print(table)
     return table, trace
 
-    # return table
 
 
 def global_base_case(seq1: str, seq2: str, mat: dict):
@@ -142,10 +136,10 @@ def global_base_case(seq1: str, seq2: str, mat: dict):
     alignment of the beginning of seq1 with '-'
     """
     shape = (len(seq1) + 1, len(seq2) + 1)
-    trace = np.zeros(shape)  # np.empty(shape,dtype=np.int8)
+    trace = np.zeros(shape)  
     trace[:, 0] = 0
-    cost = np.zeros(shape)  # np.empty(shape, dtype=float)
-    cost[0, 0] = 0  # mat[(seq1[0], '-')]
+    cost = np.zeros(shape)  
+    cost[0, 0] = 0  
     for row, char in enumerate(seq1):
         cost[row + 1, 0] = mat[(char, '-')] + cost[row, 0]
     trace, cost = fill_tables_for_global(seq1, seq2, mat, cost, trace)
@@ -228,12 +222,8 @@ def fill_tables_for_overlap(seq1: str, seq2: str, mat: dict, table, trace):
     for col in range(1, table.shape[1]):
         trace[0, col] = 2
         table[0, col] = table[0, col - 1] + mat[(seq2[col - 1], '-')]
-        # print(table)
         for row in range(1, table.shape[0]):
             fill_cell_for_ovarlap(seq1, seq2, mat, table, trace, row, col)
-            # print()
-            # print(table)
-        # print()
     return trace, table
 
 
@@ -274,17 +264,10 @@ def extract_solution_global(seq1: str, seq2: str, mat: dict, table, trace):
 
 def extract_solution_overlap(seq1: str, seq2: str, mat: dict, table, trace):
     
-    # i, j = table.shape[0] - 1, table.shape[1] - 1
 
     i, j = table.shape[0] - 1, np.argmax(table[table.shape[0] - 1])
-
     score = table[i,j]
-    
-    str1, str2 = "", ""
-    
-    # str1 += ""
-    # str2 += seq2[j:-1:-1]
-    
+    str1, str2 = "", ""    
     k = table.shape[1] - 1
 
     while k > j:
@@ -313,7 +296,7 @@ def extract_solution_overlap(seq1: str, seq2: str, mat: dict, table, trace):
             continue
     
     while i > 0:
-        str1 += seq1[i]
+        str1 += seq1[i-1]
         str2 += '-'
         i -= 1
 
@@ -360,14 +343,13 @@ def local_alignment(seq_a, seq_b, mat):
 def overlap_alignment(seq_a, seq_b, mat):
     table, score = general_alignment(seq_a, seq_b, mat, \
                               overlap_base_case, extract_solution_overlap)
+    
     print("overlap:{0}".format(score))
-
-
 
 def test_overlap():
     matrix = load_matrix( "./ex1/score_matrix.tsv")
 
-    seqs = [ ("AGG" , "GAC" ), ("AAGCTTT" , "TGCTAAAA" )]
+    seqs = [ ("AGG" , "GAC" ), ("AGGCTTTTTTT" , "GGCCAGCCTTTCCC" )]
     for (x,y) in seqs:
         print(x,y)
         overlap_alignment(x,y, matrix)
@@ -380,9 +362,6 @@ sys.setrecursionlimit(50000)
 
 
 def main():
-    
-    # test_overlap()
-    # exit(1)
     
     parser = argparse.ArgumentParser()
     parser.add_argument('seq_a', help='Path to first FASTA file (e.g. fastas/HomoSapiens-SHH.fasta)')
