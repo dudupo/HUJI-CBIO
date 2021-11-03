@@ -1,6 +1,6 @@
 
 from os import system, walk
-from main import load_matrix, fastaread
+from seq_align import load_matrix, fastaread
 from Bio import pairwise2
 from Bio.SubsMat import MatrixInfo as matlist
 #format_alignment

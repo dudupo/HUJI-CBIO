@@ -1,7 +1,6 @@
 import argparse
 from itertools import groupby
 from typing import List
-
 import numpy as np
 
 
@@ -369,8 +368,6 @@ def main():
     parser.add_argument('--align_type', help='Alignment type (e.g. local)', required=True)
     parser.add_argument('--score', help='Score matrix in.tsv format (default is score_matrix.tsv) ',
                         default='score_matrix.tsv')
-
-    parser.add_argument('--testlen', default=-1, required=False)
     command_args = parser.parse_args()
     
     seq_a, seq_b = fastaread(command_args.seq_a).__next__()[1], fastaread(command_args.seq_b).__next__()[1]
