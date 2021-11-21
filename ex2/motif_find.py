@@ -1,6 +1,29 @@
 import argparse
+import numpy as np
 
+def viterbi(emission, tau):
+    pass
 
+def forward(X, emission, tau):
+    n, m = len(X), len(emission)
+    F = np.zeros( shape=(n,m))
+    for i in range(n):
+        for l in range(m):
+            F[i][l] =  emission[l][X[i]] * (F[i-1].T @ tau[l])
+    return F
+def backward(X, emission, tau):
+    n, m = len(X), len(emission)
+    B = np.zeros( shape=(n,m))
+    for i in reversed(range(n)):
+        for l in range(m):
+            B[i][l] =  tau[l].T @ (emission[X[i+1]]* (B[i+1]))
+    return B
+
+def posterior(X, emission, tau, i):
+    F = forward(X, emission, tau)
+    B = backward(X, emission, tau)
+    Px = sum(F[-1])
+    return F[i][k] * B[i][k]/Px
 
 def main():
     parser = argparse.ArgumentParser()
