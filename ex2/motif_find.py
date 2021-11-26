@@ -3,6 +3,8 @@ import numpy as np
 from typing import List
 from itertools import groupby
 
+from scipy.special import logsumexp
+
 
 
 def load_matrix(path: str):
@@ -14,14 +16,16 @@ def load_matrix(path: str):
     alphabet is mapped to a float that is the value for the pair according to the file
     """
 
-    mat = [ dict( { 'A' :0.25, 'T' :0.25, 'C' :0.25, 'G' :0.25} ) ]
+    logquad = np.log(0.25)
+
+    mat = [ dict( { 'A' :logquad, 'T' :logquad, 'C' :logquad, 'G' :logquad} ) ]
     file = open(path, 'r')
     alphabet = file.readline().split()
     for row in file.readlines():
         mat.append(dict())
         for char, val in zip(alphabet, row.split()):
-            mat[-1][char] =  float(val)
-    mat.append( dict( { 'A' :0.25, 'T' :0.25, 'C' :0.25, 'G' :0.25} ))
+            mat[-1][char] =  np.log(float(val))
+    mat.append( dict( { 'A' :logquad, 'T' :logquad, 'C' :logquad, 'G' :logquad} ))
     return mat
 
 def fastaread(fasta_name):
@@ -50,11 +54,11 @@ def forward(X, emission, tau):
     print(tau)
     for i in range(1,n):
         for l in range(m):
-            F[i][l] += emission[l][X[i]] * (F[i-1].T @ tau[l])
+            F[i][l] = emission[l][X[i]] + ( logsumexp( F[i-1] + tau[l]))
         # print(F)
         # print()
         print()
-    return F
+    return np.exp(F)
 def backward(X, emission, tau):
     n, m = len(X), len(emission)
     B = np.zeros( shape=(n,m))
