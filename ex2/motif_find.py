@@ -26,6 +26,7 @@ def load_matrix(path: str):
         for char, val in zip(alphabet, row.split()):
             mat[-1][char] =  np.log(float(val))
     mat.append( dict( { 'A' :logquad, 'T' :logquad, 'C' :logquad, 'G' :logquad} ))
+    # mat.append( dict( { 'A' :-np.inf, 'T' :-np.inf, 'C' :-np.inf, 'G' :-np.inf} ))
     return mat
 
 def fastaread(fasta_name):
@@ -43,22 +44,13 @@ def fastaread(fasta_name):
 
 
 
-def viterbi(emission, tau):
-    pass
-
 def forward(X, emission, tau):
-    n, m = len(X), len(tau)
-    
+    n, m = len(X), len(tau)    
     F = np.ones( shape=(n,m) ) * -np.inf
-    # F = np.zeros( shape=(n,m))
     
     for l in range(m):
         F[0][l] =  emission[l][X[0]]
 
-    print(np.exp(tau))
-    print(emission)
-    print()
-    print()
     for i in range(1,n):
         for l in range(m):
             F[i][l] = emission[l][X[i]] + ( logsumexp( F[i-1] + (tau.T)[l]))
@@ -79,12 +71,52 @@ def backward(X, emission, tau):
             B[i][l] =  logsumexp((tau.T)[l] + (emission[l][X[i]]+ (B[i+1])))
     return np.exp(B)
 
-def posterior(k, X, emission, tau, i):
-    F = forward(X, emission, tau)
-    B = backward(X, emission, tau)
-    Px = sum(F[-1])
-    return F[i][k] * B[i][k]/Px
+def printHiddens(X, emission, tau, states):
+    ret = ""
+    for state in states:
+        if (state > 0) and (state < (len(tau)-1)): 
+            ret += "M"
+        else:
+            ret += "B"
+    
+    def split_to_lines(_str):
+        chunks, chunk_size = len(_str), 50
+        return [_str[i:i + chunk_size] for i in range(0, chunks, chunk_size)]
 
+    for upper_line, bottom_line in \
+        zip(split_to_lines(X), split_to_lines(ret)):
+        print(upper_line)
+        print(bottom_line)
+        print()
+
+
+def posterior(X, emission, tau):
+    F = np.log(forward(X, emission, tau))
+    B = np.log(backward(X, emission, tau))
+    states = np.argmax(F + B, axis=1)
+    printHiddens(X, emission, tau, states)
+
+def viterbi(X, emission, tau):
+    def vitforward():
+        n, m = len(X), len(tau)    
+        F = np.ones(shape=(n,m) ) * -np.inf
+        P = np.zeros(shape=(n,m) )
+        
+        for l in range(m):
+            F[0][l] =  emission[l][X[0]]
+        
+        for i in range(1,n):
+            for l in range(m):
+                F[i][l] =  np.max( emission[l][X[i]] + F[i-1] + (tau.T)[l])
+                P[i-1][l] = int(np.argmax( emission[l][X[i]] + F[i-1] + (tau.T)[l]))
+        return np.exp(F), P
+
+    F, P = vitforward()
+    states = [len(tau)-1]
+    for i in range(len(X)-1):
+        states=  [ int(P[-i-2][states[0]]) ] + states    
+    printHiddens(X, emission, tau, states)
+    
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--alg', help='Algorithm (e.g. viterbi)', required=True)
@@ -103,21 +135,18 @@ def main():
     # #############################
     tau = np.ones( (len(emission), len(emission))) * -np.inf
     tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
-    tau[-1][-1], tau[-1][-2] = np.log(1-p), np.log(p)
+    tau[-1][-1] = np.log(p) #np.log(p)
 
-    # tau = [ [ 1-p , p ] + [ 0 ] * (len(emission)-2)  ]
     for i in range(1,len(tau)-1): 
         tau[i][i+1] = 0
-    # tau.append( [ 0 ] * (len(emission)-2)  + [ 1-q, q ] )
-    tau = np.array(tau)
-    print(tau)
 
+    tau = np.array(tau)
+    print(np.exp(tau))
 
 
     if args.alg == 'viterbi':
-        pass
-        raise NotImplementedError
-
+        viterbi(X, emission, tau)
+        
     elif args.alg == 'forward':
         ret =  forward(X, emission, tau)
         print(ret)
@@ -129,9 +158,8 @@ def main():
         print(ret)
 
     elif args.alg == 'posterior':
-        pass
-        raise NotImplementedError
-
+        posterior(X, emission, tau)
+        
 
 if __name__ == '__main__':
     main()
