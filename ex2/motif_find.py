@@ -26,7 +26,6 @@ def load_matrix(path: str):
         for char, val in zip(alphabet, row.split()):
             mat[-1][char] =  np.log(float(val))
     mat.append( dict( { 'A' :logquad, 'T' :logquad, 'C' :logquad, 'G' :logquad} ))
-    # mat.append( dict( { 'A' :-np.inf, 'T' :-np.inf, 'C' :-np.inf, 'G' :-np.inf} ))
     return mat
 
 def fastaread(fasta_name):
@@ -41,8 +40,6 @@ def fastaread(fasta_name):
         header = next(header)[1:].strip()
         seq = "".join(s.strip() for s in next(faiter))
         yield header, seq
-
-
 
 def forward(X, emission, tau):
     n, m = len(X), len(tau)    
@@ -61,14 +58,14 @@ def forward(X, emission, tau):
 
 def backward(X, emission, tau):
     n, m = len(X), len(tau)
-    B = np.zeros( shape=(n,m))
+    B = np.ones(shape=(n,m)) * -np.inf 
     
-    for l in range(m):
-        B[n-1][l] = emission[l][X[n-1]]
+    
+    B[n-1][m-1] = emission[m-1][X[n-1]] + np.log(1 - np.exp(tau[-1][-1])) 
 
     for i in reversed(range(n-1)):
         for l in range(m):
-            B[i][l] =  logsumexp((tau.T)[l] + (emission[l][X[i]]+ (B[i+1])))
+            B[i][l] =  logsumexp(tau[l] + (emission[l][X[i]]+ (B[i+1])))
     return np.exp(B)
 
 def printHiddens(X, emission, tau, states):
