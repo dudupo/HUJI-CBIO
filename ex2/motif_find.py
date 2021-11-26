@@ -49,7 +49,7 @@ def viterbi(emission, tau):
 def forward(X, emission, tau):
     n, m = len(X), len(tau)
     F = np.zeros( shape=(n,m))
-    F[0][0] =  1
+    F[0][0] =  0
     print(tau)
     for i in range(1,n):
         for l in range(m):
@@ -60,7 +60,7 @@ def backward(X, emission, tau):
     n, m = len(X), len(tau)
     B = np.zeros( shape=(n,m))
     
-    B[n-1][m-1] = 1
+    B[n-1][m-1] = 0
     for i in reversed(range(n-1)):
         for l in range(m):
             B[i][l] =  logsumexp(tau[l] + (emission[l][X[i+1]]+ (B[i+1])))
@@ -85,13 +85,13 @@ def main():
 
     emission = load_matrix( args.initial_emission )
 
-    tau = np.zeros( (len(emission), len(emission)))
-    tau[0][0], tau[0][1] = 1-p, p
-    tau[-1][-2], tau[-1][-1] = 1-q, q
+    tau = np.ones( (len(emission), len(emission))) * -np.inf
+    tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
+    tau[-1][-2], tau[-1][-1] = np.log(1-q), np.log(q)
 
     # tau = [ [ 1-p , p ] + [ 0 ] * (len(emission)-2)  ]
     for i in range(1,len(tau)-1): 
-        tau[i][i+1] = 1
+        tau[i][i+1] = 0
     # tau.append( [ 0 ] * (len(emission)-2)  + [ 1-q, q ] )
     tau = np.array(tau)
     
