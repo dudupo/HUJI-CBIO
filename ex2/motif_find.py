@@ -48,12 +48,21 @@ def viterbi(emission, tau):
 
 def forward(X, emission, tau):
     n, m = len(X), len(tau)
-    F = np.zeros( shape=(n,m))
-    F[0][0] =  0
-    print(tau)
+    
+    F = np.ones( shape=(n,m) ) * -np.inf
+    # F = np.zeros( shape=(n,m))
+    
+    F[0][0] =  emission[0][X[0]]
+    print(np.exp(tau))
+    print(emission)
+    print()
+    print()
     for i in range(1,n):
         for l in range(m):
-            F[i][l] = emission[l][X[i]] + ( logsumexp( F[i-1] + tau[l]))
+            F[i][l] = emission[l][X[i]] + ( logsumexp( F[i-1] + (tau.T)[l]))
+        print("step :")
+        print(np.exp(F))
+        print()
     return np.exp(F)
 
 def backward(X, emission, tau):
@@ -85,16 +94,19 @@ def main():
 
     emission = load_matrix( args.initial_emission )
 
+    # #############################
+    # TODO: add transition from the first to the end with q probability.
+    # #############################
     tau = np.ones( (len(emission), len(emission))) * -np.inf
     tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
-    tau[-1][-2], tau[-1][-1] = np.log(1-q), np.log(q)
+    tau[-1][-2], tau[-1][-1] = np.log(1-p), np.log(p)
 
     # tau = [ [ 1-p , p ] + [ 0 ] * (len(emission)-2)  ]
     for i in range(1,len(tau)-1): 
         tau[i][i+1] = 0
     # tau.append( [ 0 ] * (len(emission)-2)  + [ 1-q, q ] )
     tau = np.array(tau)
-    
+    print(tau)
 
 
 
@@ -105,10 +117,12 @@ def main():
     elif args.alg == 'forward':
         ret =  forward(X, emission, tau)
         print(ret)
+        print(ret[0])
+        print(sum(ret[-1]))
 
     elif args.alg == 'backward':
         ret = backward(X, emission, tau)
-        print(ret)
+        # print(ret)
 
     elif args.alg == 'posterior':
         pass
