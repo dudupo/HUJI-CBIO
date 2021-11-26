@@ -49,23 +49,22 @@ def viterbi(emission, tau):
 def forward(X, emission, tau):
     n, m = len(X), len(tau)
     F = np.zeros( shape=(n,m))
-    # for l in range(m):
     F[0][0] =  1
     print(tau)
     for i in range(1,n):
         for l in range(m):
             F[i][l] = emission[l][X[i]] + ( logsumexp( F[i-1] + tau[l]))
-        # print(F)
-        # print()
-        print()
     return np.exp(F)
+
 def backward(X, emission, tau):
-    n, m = len(X), len(emission)
+    n, m = len(X), len(tau)
     B = np.zeros( shape=(n,m))
-    for i in reversed(range(n)):
+    
+    B[n-1][m-1] = 1
+    for i in reversed(range(n-1)):
         for l in range(m):
-            B[i][l] =  tau[l].T @ (emission[l][X[i+1]]* (B[i+1]))
-    return B
+            B[i][l] =  logsumexp(tau[l] + (emission[l][X[i+1]]+ (B[i+1])))
+    return np.exp(B)
 
 def posterior(k, X, emission, tau, i):
     F = forward(X, emission, tau)
@@ -108,8 +107,8 @@ def main():
         print(ret)
 
     elif args.alg == 'backward':
-        pass
-        raise NotImplementedError
+        ret = backward(X, emission, tau)
+        print(ret)
 
     elif args.alg == 'posterior':
         pass
