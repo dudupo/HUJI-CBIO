@@ -52,7 +52,9 @@ def forward(X, emission, tau):
     F = np.ones( shape=(n,m) ) * -np.inf
     # F = np.zeros( shape=(n,m))
     
-    F[0][0] =  emission[0][X[0]]
+    for l in range(m):
+        F[0][l] =  emission[l][X[0]]
+
     print(np.exp(tau))
     print(emission)
     print()
@@ -69,10 +71,12 @@ def backward(X, emission, tau):
     n, m = len(X), len(tau)
     B = np.zeros( shape=(n,m))
     
-    B[n-1][m-1] = 0
+    for l in range(m):
+        B[n-1][l] = emission[l][X[n-1]]
+
     for i in reversed(range(n-1)):
         for l in range(m):
-            B[i][l] =  logsumexp(tau[l] + (emission[l][X[i+1]]+ (B[i+1])))
+            B[i][l] =  logsumexp((tau.T)[l] + (emission[l][X[i]]+ (B[i+1])))
     return np.exp(B)
 
 def posterior(k, X, emission, tau, i):
@@ -99,7 +103,7 @@ def main():
     # #############################
     tau = np.ones( (len(emission), len(emission))) * -np.inf
     tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
-    tau[-1][-2], tau[-1][-1] = np.log(1-p), np.log(p)
+    tau[-1][-1], tau[-1][-2] = np.log(1-p), np.log(p)
 
     # tau = [ [ 1-p , p ] + [ 0 ] * (len(emission)-2)  ]
     for i in range(1,len(tau)-1): 
@@ -122,7 +126,7 @@ def main():
 
     elif args.alg == 'backward':
         ret = backward(X, emission, tau)
-        # print(ret)
+        print(ret)
 
     elif args.alg == 'posterior':
         pass
