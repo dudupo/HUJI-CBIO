@@ -53,14 +53,13 @@ def forward(X, emission, tau, q):
         for l in range(m):
             F[i][l] = emission[l][X[i]] + ( logsumexp( F[i-1] + (tau.T)[l]))
     
-    F[-1][-1] = F[-1][-1] +  tau[0][1]
+    F[-1][-1] = F[-1][-1] +  tau[0][1] 
     return np.exp(F)
 
 def backward(X, emission, tau, q):
     n, m = len(X), len(tau)
     B = np.ones(shape=(n,m)) * -np.inf 
     
-    # B[n-1][0] = emission[m-1][X[n-1]] 
     B[n-1][m-1] = emission[m-1][X[n-1]] +  tau[0][1]
 
     for i in reversed(range(n-1)):
@@ -102,9 +101,6 @@ def viterbi(X, emission, tau, q):
         n, m = len(X), len(tau)    
         F = np.ones(shape=(n,m) ) * -np.inf
         P = np.zeros(shape=(n,m) )
-        
-        # for l in range(m):
-        #     F[0][l] =  emission[l][X[0]]
         
         F[0][0] = np.log(q) + emission[0][X[0]]
         F[0][-1] = np.log(1- q) + emission[-1][X[0]]
@@ -157,9 +153,6 @@ def main():
         
     elif args.alg == 'forward':
         ret =  forward(X, emission, tau, q)
-        # print(ret)
-        # print(ret[0])
-        # print(ret[-1][-1])
         print(np.log(ret[-1][-1]))
 
     elif args.alg == 'backward':
@@ -170,5 +163,7 @@ def main():
         posterior(X, emission, tau, q)
         
 
+
 if __name__ == '__main__':
-    main()
+    main() 
+    

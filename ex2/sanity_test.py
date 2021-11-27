@@ -20,6 +20,8 @@ states = 'BBMMMMBB'
 ll = -10.47
 
 
+
+
 def is_output_correct(ret, alg):
     """ validate user output against school solution """
 
