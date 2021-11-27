@@ -41,31 +41,35 @@ def fastaread(fasta_name):
         seq = "".join(s.strip() for s in next(faiter))
         yield header, seq
 
-def forward(X, emission, tau):
+def forward(X, emission, tau, q):
     n, m = len(X), len(tau)    
     F = np.ones( shape=(n,m) ) * -np.inf
     
-    for l in range(m):
-        F[0][l] =  emission[l][X[0]]
-
+    # for l in range(m):
+    F[0][0] = np.log(q) +  emission[0][X[0]]
+    F[0][-1] = np.log(1- q) + emission[-1][X[0]]
+    
     for i in range(1,n):
         for l in range(m):
             F[i][l] = emission[l][X[i]] + ( logsumexp( F[i-1] + (tau.T)[l]))
-        print("step :")
-        print(np.exp(F))
-        print()
+    
+    F[-1][-1] = F[-1][-1] +  tau[0][1]
     return np.exp(F)
 
-def backward(X, emission, tau):
+def backward(X, emission, tau, q):
     n, m = len(X), len(tau)
     B = np.ones(shape=(n,m)) * -np.inf 
     
-    
-    B[n-1][m-1] = emission[m-1][X[n-1]] + np.log(1 - np.exp(tau[-1][-1])) 
+    # B[n-1][0] = emission[m-1][X[n-1]] 
+    B[n-1][m-1] = emission[m-1][X[n-1]] +  tau[0][1]
 
     for i in reversed(range(n-1)):
         for l in range(m):
             B[i][l] =  logsumexp(tau[l] + (emission[l][X[i]]+ (B[i+1])))
+    
+    B[0][0] += np.log(q) 
+    B[0][-1] += np.log(1- q)
+
     return np.exp(B)
 
 def printHiddens(X, emission, tau, states):
@@ -81,40 +85,48 @@ def printHiddens(X, emission, tau, states):
         return [_str[i:i + chunk_size] for i in range(0, chunks, chunk_size)]
 
     for upper_line, bottom_line in \
-        zip(split_to_lines(X), split_to_lines(ret)):
+        zip(split_to_lines(ret), split_to_lines(X)):
         print(upper_line)
         print(bottom_line)
         print()
 
 
-def posterior(X, emission, tau):
-    F = np.log(forward(X, emission, tau))
-    B = np.log(backward(X, emission, tau))
+def posterior(X, emission, tau, q):
+    F = np.log(forward(X, emission, tau, q))
+    B = np.log(backward(X, emission, tau, q))
     states = np.argmax(F + B, axis=1)
     printHiddens(X, emission, tau, states)
 
-def viterbi(X, emission, tau):
+def viterbi(X, emission, tau, q):
     def vitforward():
         n, m = len(X), len(tau)    
         F = np.ones(shape=(n,m) ) * -np.inf
         P = np.zeros(shape=(n,m) )
         
-        for l in range(m):
-            F[0][l] =  emission[l][X[0]]
+        # for l in range(m):
+        #     F[0][l] =  emission[l][X[0]]
         
+        F[0][0] = np.log(q) + emission[0][X[0]]
+        F[0][-1] = np.log(1- q) + emission[-1][X[0]]
+
         for i in range(1,n):
             for l in range(m):
                 F[i][l] =  np.max( emission[l][X[i]] + F[i-1] + (tau.T)[l])
-                P[i-1][l] = int(np.argmax( emission[l][X[i]] + F[i-1] + (tau.T)[l]))
+                P[i][l] = int(np.argmax( emission[l][X[i]] + F[i-1] + (tau.T)[l]))
+        F[-1][-1] += tau[0][1]
         return np.exp(F), P
 
     F, P = vitforward()
     states = [len(tau)-1]
     for i in range(len(X)-1):
-        states=  [ int(P[-i-2][states[0]]) ] + states    
+        states=  [ int(P[-i-1][states[0]]) ] + states    
     printHiddens(X, emission, tau, states)
     
 def main():
+
+    import warnings
+    warnings.filterwarnings("ignore")
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--alg', help='Algorithm (e.g. viterbi)', required=True)
     parser.add_argument('seq', help='A sequence over the alphabet [A,C,G,T] (e.g. ACTGGACTACGTCATGCA)')
@@ -132,30 +144,30 @@ def main():
     # #############################
     tau = np.ones( (len(emission), len(emission))) * -np.inf
     tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
-    tau[-1][-1] = np.log(p) #np.log(p)
+    tau[-1][-1] = np.log(1-p) #np.log(p)
 
     for i in range(1,len(tau)-1): 
         tau[i][i+1] = 0
 
     tau = np.array(tau)
-    print(np.exp(tau))
 
 
     if args.alg == 'viterbi':
-        viterbi(X, emission, tau)
+        viterbi(X, emission, tau, q)
         
     elif args.alg == 'forward':
-        ret =  forward(X, emission, tau)
-        print(ret)
-        print(ret[0])
-        print(sum(ret[-1]))
+        ret =  forward(X, emission, tau, q)
+        # print(ret)
+        # print(ret[0])
+        # print(ret[-1][-1])
+        print(np.log(ret[-1][-1]))
 
     elif args.alg == 'backward':
-        ret = backward(X, emission, tau)
-        print(ret)
+        ret = backward(X, emission, tau, q)
+        print(np.log(ret[0][0]))
 
     elif args.alg == 'posterior':
-        posterior(X, emission, tau)
+        posterior(X, emission, tau, q)
         
 
 if __name__ == '__main__':

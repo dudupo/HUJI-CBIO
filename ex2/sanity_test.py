@@ -24,6 +24,7 @@ def is_output_correct(ret, alg):
     """ validate user output against school solution """
 
     r = [l.strip() for l in ret.split('\n') if l.strip()]
+    print(r)
     if alg in ('forward', 'backward'):
         return len(r) == 1 and np.round(float(r[0]), 2) == ll
     else:
