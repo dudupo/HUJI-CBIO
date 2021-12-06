@@ -94,8 +94,6 @@ def printHiddens(X, emission, tau, states):
 def posterior(X, emission, tau, q):
     F = np.log(forward(X, emission, tau, q))
     B = np.log(backward(X, emission, tau, q))
-    # print( F[3] )
-    # print( B[3] )
     states = np.argmax((F[0:-1,:] + B[1:,:])[1:], axis=1)
     printHiddens(X, emission, tau, states)
 
