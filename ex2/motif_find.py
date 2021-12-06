@@ -43,36 +43,37 @@ def fastaread(fasta_name):
 
 def forward(X, emission, tau, q):
     n, m = len(X), len(tau)    
-    F = np.ones( shape=(n,m) ) * -np.inf
+    F = np.ones( shape=(n+2,m) ) * -np.inf
     
     # for l in range(m):
-    F[0][0] = np.log(q) +  emission[0][X[0]]
-    F[0][-1] = np.log(1- q) + emission[-1][X[0]]
+    F[0][0] = np.log(q)     #+  emission[0][X[0]]
+    F[0][-1] = np.log(1- q)   #+ emission[-1][X[0]]
     
-    for i in range(1,n):
+    for i in range(1,n+1):
         for l in range(m):
-            F[i][l] = emission[l][X[i]] + ( logsumexp( F[i-1] + (tau.T)[l]))
+            F[i][l] = emission[l][X[i-1]] + ( logsumexp( F[i-1] + (tau.T)[l]))
     
-    F[-1][-1] = F[-1][-1] +  tau[0][1] 
+    F[-1][-1] = F[-2][-1] +  tau[0][1] - tau[0][0]
+    # F[0][0] =  logsumexp(np.array([np.log(q) + F[1][0], np.log(1- q) + F[1][-1]]))
     return np.exp(F)
 
 def backward(X, emission, tau, q):
     n, m = len(X), len(tau)
-    B = np.ones(shape=(n,m)) * -np.inf 
+    B = np.ones(shape=(n+2,m)) * -np.inf 
     
-    B[n-1][m-1] = emission[m-1][X[n-1]] +  tau[0][1]
-
-    for i in reversed(range(n-1)):
+    B[n+1][m-1] = tau[0][1] - tau[0][0] 
+    
+    for i in reversed(range(1, n+2)):
         for l in range(m):
-            B[i][l] =  logsumexp(tau[l] + (emission[l][X[i]]+ (B[i+1])))
-    
-    B[0][0] += np.log(q) 
-    B[0][-1] += np.log(1- q)
+            emission_k = np.array( [ emission[k][X[i-2]] for k in range(m) ]) 
+            B[i-1][l] =  logsumexp(tau[l] + emission_k + B[i])
 
+    B[0][0] =  logsumexp(np.array([np.log(q) + B[1][0], np.log(1- q) + B[1][-1]])) 
     return np.exp(B)
 
 def printHiddens(X, emission, tau, states):
     ret = ""
+    # print(states)
     for state in states:
         if (state > 0) and (state < (len(tau)-1)): 
             ret += "M"
@@ -93,7 +94,9 @@ def printHiddens(X, emission, tau, states):
 def posterior(X, emission, tau, q):
     F = np.log(forward(X, emission, tau, q))
     B = np.log(backward(X, emission, tau, q))
-    states = np.argmax(F + B, axis=1)
+    # print( F[3] )
+    # print( B[3] )
+    states = np.argmax((F[0:-1,:] + B[1:,:])[1:], axis=1)
     printHiddens(X, emission, tau, states)
 
 def viterbi(X, emission, tau, q):
