@@ -90,7 +90,21 @@ def printHiddens(X, emission, tau, states):
         print(bottom_line)
         print()
 
-
+from itertools import product
+def transition_event(X, emission, tau, q):
+    F = np.log(forward(X, emission, tau, q))
+    B = np.log(backward(X, emission, tau, q))
+    stats = np.zeros(tau.shape)
+    
+    emissions = np.array([[emission[l][x] for x in X]\
+         for l in range(tau.shape[0])]) 
+    
+    for k in range(tau.shape[0]):
+        for l in range(tau.shape[0]): 
+            stats[k][l] = (F[0:-2,k] + B[2:,l])[1:] + tau[k,l] + emissions[l] - F[-1][-1]
+    Nq  = np.log(1- q) + B[1][-1] - F[-1][-1]
+    Nnp = logsumexp( stats[0][0] + stats[-1][-1] )  
+    return np.array([1 - np.exp(Nnp), 1 - np.exp(Nq)])
 def posterior(X, emission, tau, q):
     F = np.log(forward(X, emission, tau, q))
     B = np.log(backward(X, emission, tau, q))
@@ -118,7 +132,22 @@ def viterbi(X, emission, tau, q):
     for i in range(len(X)-1):
         states=  [ int(P[-i-1][states[0]]) ] + states    
     printHiddens(X, emission, tau, states)
-    
+
+def generate_tau(initial_emission, p, q):
+    emission = load_matrix( initial_emission )
+
+    # #############################
+    # TODO: add transition from the first to the end with q probability.
+    # #############################
+    tau = np.ones( (len(emission), len(emission))) * -np.inf
+    tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
+    tau[-1][-1] = np.log(1-p) #np.log(p)
+
+    for i in range(1,len(tau)-1): 
+        tau[i][i+1] = 0
+    tau = np.array(tau)
+    return tau, emission, p ,q
+
 def main():
 
     import warnings

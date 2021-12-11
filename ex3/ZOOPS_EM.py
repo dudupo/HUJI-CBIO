@@ -1,4 +1,6 @@
+from motif_find import transition_event, generate_tau
 import argparse
+import numpy as np
 # from motif_find import...
 
 def transitions ():
@@ -13,17 +15,19 @@ def maximize(stats):
     # shaked
     pass
 
-def expectaion(p,q , ... ):
+def expectaion(seqs, emission, tau ,q):
     '''given distributions returns the expectaion of the stats'''
-    # david
-    return stats
+    stats = np.array(list(map(\
+        lambda x: transition_event(x, emission, tau, q), seqs)))
+    stats = np.sum(stats) # Np,Nq
+    return stats 
 
-def BaumWelch(convergenceThr):
-    # shaked
-    while convergenceThr:
-        stats = expectaion(p,q)
-        p,q = maximize(stats)
-    pass
+def BaumWelch(seqs, emission, tau, q, convergenceThr):
+    for j in range(10): #convergenceThr
+        p,q = expectaion(seqs, emission, tau ,q)
+        tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
+        tau[-1][-1] = np.log(1-p) 
+    return tau, p, q
 
 def dump_results():
     # shaked
@@ -44,9 +48,30 @@ def parse_args():
                                                            ' (e.g. 0.1)')
     return parser.parse_args()
 
+def write_motif_tsv(_file_path, seed, alpha):
+    beta = 1 - 3 * alpha
+    _file = open(_file_path, 'w+')
+    probabilities = { "A" : alpha, "C" : alpha, "G" : alpha, "T": alpha }
+    _file.write("A C G T")
+    for charter in seed:
+        probabilities[charter] = beta
+        _file.write("\n{0} {1} {2} {3}".format(*probabilities.values()))
+        probabilities[charter] = alpha
+
+def readseqs( _file_path ):
+    print(_file_path)
+    return [s[:-1] for s in open(_file_path, 'r').readlines()[1::2]]
 
 def main():
     args = parse_args()
+    write_motif_tsv("my_motif.tsv", args.seed, args.alpha )    
+    p,q = args.p, args.q
+    tau, emission, p, q = generate_tau("my_motif.tsv", p, q)
+    seqs = readseqs( args.fasta )    
+    print(seqs)
+    tau, p, q = BaumWelch(seqs, emission, tau ,q, args.convergenceThr)
+    print(p,q)
+
 
     # build transitions 
     # build emissions 

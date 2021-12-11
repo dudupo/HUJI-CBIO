@@ -68,7 +68,7 @@ def main(args):
     run_test(mf, fasta, seed, 2)
 
     # cleanup
-    os.remove(fasta)
+    # os.remove(fasta)
 
 
 if __name__ == '__main__':
