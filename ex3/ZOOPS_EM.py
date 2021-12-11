@@ -19,11 +19,16 @@ def expectaion(seqs, emission, tau ,q):
     '''given distributions returns the expectaion of the stats'''
     stats = np.array(list(map(\
         lambda x: transition_event(x, emission, tau, q), seqs)))
-    stats = np.sum(stats) # Np,Nq
-    return stats 
+    stats = np.sum(stats, axis=0) #/ len(seqs) # Np,Nq
+    # print(stats)
+    r = stats[0] + stats[1]
+    h = stats[2] + stats[3]
+    p,q = stats[0] / r , stats[2] / h
+    print(p,q)
+    return p,q 
 
 def BaumWelch(seqs, emission, tau, q, convergenceThr):
-    for j in range(10): #convergenceThr
+    for j in range(100): #convergenceThr
         p,q = expectaion(seqs, emission, tau ,q)
         tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
         tau[-1][-1] = np.log(1-p) 

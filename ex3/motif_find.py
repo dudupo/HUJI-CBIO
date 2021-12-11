@@ -101,10 +101,16 @@ def transition_event(X, emission, tau, q):
     
     for k in range(tau.shape[0]):
         for l in range(tau.shape[0]): 
-            stats[k][l] = (F[0:-2,k] + B[2:,l])[1:] + tau[k,l] + emissions[l] - F[-1][-1]
-    Nq  = np.log(1- q) + B[1][-1] - F[-1][-1]
-    Nnp = logsumexp( stats[0][0] + stats[-1][-1] )  
-    return np.array([1 - np.exp(Nnp), 1 - np.exp(Nq)])
+            stats[k][l] = logsumexp((F[0:-2,k] + B[2:,l])\
+                 + tau[k,l] + emissions[l] - F[-1][-1])
+    
+    Nnq  = np.exp(np.log(1- q) + B[1][-1] - F[-1][-1])
+    Nq = np.exp(np.log(q) + B[1][0] - F[-1][-1])
+    
+    Nnp = np.exp(stats[0][0]) # + stats[-1][-1]
+    Np =  np.exp(stats[0][1]) 
+    return np.array([Np , Nnp, Nq, Nnq])
+
 def posterior(X, emission, tau, q):
     F = np.log(forward(X, emission, tau, q))
     B = np.log(backward(X, emission, tau, q))
