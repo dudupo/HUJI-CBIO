@@ -1,6 +1,33 @@
 import argparse
 # from motif_find import...
 
+def transitions ():
+    # shaked
+    pass
+def emissions ():
+    # shaked
+    pass
+
+def maximize(stats):
+    ''' estimate the emissions and the transitions tables '''
+    # shaked
+    pass
+
+def expectaion(p,q , ... ):
+    '''given distributions returns the expectaion of the stats'''
+    # david
+    return stats
+
+def BaumWelch(convergenceThr):
+    # shaked
+    while convergenceThr:
+        stats = expectaion(p,q)
+        p,q = maximize(stats)
+    pass
+
+def dump_results():
+    # shaked
+    pass
 
 def parse_args():
     """
@@ -22,7 +49,6 @@ def main():
     args = parse_args()
 
     # build transitions 
-
     # build emissions 
 
     # load fasta
