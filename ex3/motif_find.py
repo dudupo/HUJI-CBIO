@@ -154,6 +154,36 @@ def generate_tau(initial_emission, p, q):
     tau = np.array(tau)
     return tau, emission, p ,q
 
+
+from random import random, choice
+def sample(emission, tau, q):
+    _tau = np.exp(tau)
+
+    def sample_unif():
+        return choice([ ['A'] , ['G'], ['C'], ['T'] ])
+    def sample_motif():
+        motif = []
+        for _ in range(1, tau.shape[0] - 1):
+            uni_sample, current_prob = random(), 0
+            for char, prob in emission[_].items():
+                current_prob += np.exp(prob)
+                if uni_sample < current_prob: 
+                    motif.append(char)
+        return motif
+   
+    p = _tau[0][1] 
+    ret = []
+    
+    if (random() < q):
+        while random() < (1-p):
+            ret += sample_unif()
+        ret += sample_motif()
+    
+    while random() < (1-p):
+        ret += sample_unif()
+    
+    return "".join(ret)
+
 def main():
 
     import warnings

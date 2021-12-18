@@ -1,4 +1,4 @@
-from motif_find import transition_event, generate_tau
+from motif_find import transition_event, generate_tau, sample
 import argparse
 import numpy as np
 # from motif_find import...
@@ -24,11 +24,11 @@ def expectaion(seqs, emission, tau ,q):
     r = stats[0] + stats[1]
     h = stats[2] + stats[3]
     p,q = stats[0] / r , stats[2] / h
-    print(p,q)
+    # print(p,q)
     return p,q 
 
 def BaumWelch(seqs, emission, tau, q, convergenceThr):
-    for j in range(100): #convergenceThr
+    for j in range(50): #convergenceThr
         p,q = expectaion(seqs, emission, tau ,q)
         tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
         tau[-1][-1] = np.log(1-p) 
@@ -65,15 +65,19 @@ def write_motif_tsv(_file_path, seed, alpha):
 
 def readseqs( _file_path ):
     print(_file_path)
-    return [s[:-1] for s in open(_file_path, 'r').readlines()[1::2]]
+    return [s[:-1] for s in open(_file_path, 'r').readlines()[1::2] if len(s) > 1 ]
 
 def main():
+    print("-------------------------------------------")
     args = parse_args()
     write_motif_tsv("my_motif.tsv", args.seed, args.alpha )    
     p,q = args.p, args.q
     tau, emission, p, q = generate_tau("my_motif.tsv", p, q)
+    
+    # print(sample(emission, tau ,q)) 
+    
     seqs = readseqs( args.fasta )    
-    print(seqs)
+    # print(seqs)
     tau, p, q = BaumWelch(seqs, emission, tau ,q, args.convergenceThr)
     print(p,q)
 
