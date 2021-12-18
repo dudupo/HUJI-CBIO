@@ -1,19 +1,6 @@
 from motif_find import transition_event, generate_tau, sample
 import argparse
 import numpy as np
-# from motif_find import...
-
-def transitions ():
-    # shaked
-    pass
-def emissions ():
-    # shaked
-    pass
-
-def maximize(stats):
-    ''' estimate the emissions and the transitions tables '''
-    # shaked
-    pass
 
 def expectaion(seqs, emission, tau ,q):
     '''given distributions returns the expectaion of the stats'''
@@ -22,13 +9,13 @@ def expectaion(seqs, emission, tau ,q):
     stats = np.sum(stats, axis=0) #/ len(seqs) # Np,Nq
     # print(stats)
     r = stats[0] + stats[1]
-    h = stats[2] + stats[3]
-    p,q = stats[0] / r , stats[2] / h
+    h = stats[2] + stats[4] + stats[3] + r 
+    q,p = stats[0] / r , (stats[4]+ r) / h
     # print(p,q)
     return p,q 
 
 def BaumWelch(seqs, emission, tau, q, convergenceThr):
-    for j in range(50): #convergenceThr
+    for j in range(20): #convergenceThr
         p,q = expectaion(seqs, emission, tau ,q)
         tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
         tau[-1][-1] = np.log(1-p) 

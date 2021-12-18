@@ -104,12 +104,23 @@ def transition_event(X, emission, tau, q):
             stats[k][l] = logsumexp((F[0:-2,k] + B[2:,l])\
                  + tau[k,l] + emissions[l] - F[-1][-1])
     
-    Nnq  = np.exp(np.log(1- q) + B[1][-1] - F[-1][-1])
-    Nq = np.exp(np.log(q) + B[1][0] - F[-1][-1])
-    
-    Nnp = np.exp(stats[0][0]) # + stats[-1][-1]
-    Np =  np.exp(stats[0][1]) 
-    return np.array([Np , Nnp, Nq, Nnq])
+    Nnq  = np.log(1- q) + B[1][-1] - F[-1][-1]
+    Nq = np.log(q) + B[1][0] - F[-1][-1]
+
+    S = np.exp( np.array([
+        Nq, 
+        Nnq,
+        stats[0][0],
+        stats[-1][-1],
+        stats[0][1]
+    ]))    
+
+    # Nnp = np.exp(stats[0][0]) + np.exp(stats[-1][-1])
+    # Np =  np.exp(stats[0][1]) + 1 
+    # print( "#######")
+    # print([Np , Nnp, Nq, Nnq]) 
+    # print( "#######")
+    return S
 
 def posterior(X, emission, tau, q):
     F = np.log(forward(X, emission, tau, q))
@@ -142,9 +153,6 @@ def viterbi(X, emission, tau, q):
 def generate_tau(initial_emission, p, q):
     emission = load_matrix( initial_emission )
 
-    # #############################
-    # TODO: add transition from the first to the end with q probability.
-    # #############################
     tau = np.ones( (len(emission), len(emission))) * -np.inf
     tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
     tau[-1][-1] = np.log(1-p) #np.log(p)
@@ -175,10 +183,12 @@ def sample(emission, tau, q):
     ret = []
     
     if (random() < q):
+        ret += sample_unif()
         while random() < (1-p):
             ret += sample_unif()
         ret += sample_motif()
     
+    ret += sample_unif()
     while random() < (1-p):
         ret += sample_unif()
     
@@ -201,9 +211,6 @@ def main():
 
     emission = load_matrix( args.initial_emission )
 
-    # #############################
-    # TODO: add transition from the first to the end with q probability.
-    # #############################
     tau = np.ones( (len(emission), len(emission))) * -np.inf
     tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
     tau[-1][-1] = np.log(1-p) #np.log(p)
