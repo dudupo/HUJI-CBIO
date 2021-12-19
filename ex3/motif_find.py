@@ -217,13 +217,15 @@ def sample(emission, tau, q):
             uni_sample, current_prob = random(), 0
             for char, prob in emission[_].items():
                 current_prob += np.exp(prob)
+                # print(char, prob)
                 if uni_sample < current_prob: 
                     motif.append(char)
+                    break
+        print("".join(motif))
         return motif
    
     p = _tau[0][1] 
     ret = []
-    
     if (random() < q):
         ret += sample_unif()
         while random() < (1-p):
