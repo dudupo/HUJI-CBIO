@@ -54,12 +54,23 @@ def BaumWelch(seqs, emission, tau, q, convergenceThr):
 
     return tau, p, q,result_history
 
-def dump_results(result_history):
+def dump_results(result_history,emissiones,p,q):
     """write results"""
     # shaked
     with open("ll_history.txt","w") as history_file:
         for i in result_history:
-            history_file.write(f"{str(i)}\n")
+            history_file.write(f"{str(i,)}\n")
+    with open("motif_profile.txt","w") as motif_profile_file:
+        for base in ["A","C","G","T"]:
+            for s in emissiones[1:-1]:
+                motif_profile_file.write(f"{str(round(s[base],2))}\t")
+            motif_profile_file.write("\n")
+        motif_profile_file.write(f"{str(round(q,4))}\n")
+        motif_profile_file.write(f"{str(round(p, 4))}\n")
+
+
+
+
 
 
 
