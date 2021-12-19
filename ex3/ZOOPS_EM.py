@@ -1,4 +1,4 @@
-import emission as emission
+# import emission as emission
 
 from motif_find import transition_event, generate_tau, sample , forward
 import argparse
@@ -28,7 +28,7 @@ def compute_log_likelihood_for_sequences(sequences,tau,p,q,emissiones):
     """
     log_likelihood = 0
     for seq in sequences:
-        log_likelihood += np.log(forward(seq,emissiones,tau,q))
+        log_likelihood += np.log(forward(seq,emissiones,tau,q)[-1][-1])
     return log_likelihood
 
 

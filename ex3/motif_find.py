@@ -150,6 +150,31 @@ def viterbi(X, emission, tau, q):
         states=  [ int(P[-i-1][states[0]]) ] + states    
     printHiddens(X, emission, tau, states)
 
+def _viterbi(X, emission, tau, q):
+    def vitforward():
+        n, m = len(X), len(tau)    
+        F = np.ones(shape=(n,m) ) * -np.inf
+        P = np.zeros(shape=(n,m) )
+        
+        F[0][0] = np.log(q) + emission[0][X[0]]
+        F[0][-1] = np.log(1- q) + emission[-1][X[0]]
+
+        for i in range(1,n):
+            for l in range(m):
+                F[i][l] =  np.max( emission[l][X[i]] + F[i-1] + (tau.T)[l])
+                P[i][l] = int(np.argmax( emission[l][X[i]] + F[i-1] + (tau.T)[l]))
+        F[-1][-1] += tau[0][1]
+        return np.exp(F), P
+
+    F, P = vitforward()
+    states = [len(tau)-1]
+    for i in range(len(X)-1):
+        states=  [ int(P[-i-1][states[0]]) ] + states 
+
+    for i,state in enumerate(states):
+        if (state > 0) and (state < (len(tau)-1)):
+            return i               
+
 def generate_tau(initial_emission, p, q):
     emission = load_matrix( initial_emission )
 
