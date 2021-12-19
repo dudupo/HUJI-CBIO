@@ -1,6 +1,6 @@
 # import emission as emission
 
-from motif_find import transition_event, generate_tau, sample , forward
+from motif_find import transition_event, generate_tau, sample , forward, _viterbi
 import argparse
 import numpy as np
 
@@ -58,8 +58,9 @@ def dump_results(result_history,emissiones,p,q):
     """write results"""
     # shaked
     with open("ll_history.txt","w") as history_file:
-        for i in result_history:
-            history_file.write(f"{str(i,)}\n")
+        history_file.write(f"{str(result_history[0],)}")
+        for i in result_history[1:]:
+            history_file.write(f"\n{str(i,)}")
     with open("motif_profile.txt","w") as motif_profile_file:
         for base in ["A","C","G","T"]:
             for s in emissiones[1:-1]:
@@ -117,7 +118,7 @@ def main():
     seqs = readseqs( args.fasta )    
     # print(seqs)
     tau, p, q ,log_likelihood_history= BaumWelch(seqs, emission, tau ,q, args.convergenceThr)
-    dump_results(log_likelihood_history)
+    dump_results(log_likelihood_history, emission, p, q)
     print(p,q)
 
 
