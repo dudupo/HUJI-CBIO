@@ -55,6 +55,7 @@ def BaumWelch(seqs, emission, tau, q, convergenceThr):
     return tau, p, q,result_history
 
 def dump_results(result_history):
+    """write results"""
     # shaked
     with open("ll_history.txt","w") as history_file:
         for i in result_history:
@@ -62,7 +63,7 @@ def dump_results(result_history):
 
 
 
-    pass
+
 
 def parse_args():
     """
