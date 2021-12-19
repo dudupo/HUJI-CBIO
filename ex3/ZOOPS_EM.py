@@ -73,7 +73,7 @@ def BaumWelch(seqs, emission, tau, q, convergenceThr):
 
     return tau, p, q,result_history, emission
 
-def dump_results(result_history,emissiones,p,q):
+def dump_results(result_history, emissiones, p, q, sequences,tau):
     """write results"""
     # shaked
     with open("ll_history.txt","w") as history_file:
@@ -87,6 +87,12 @@ def dump_results(result_history,emissiones,p,q):
             motif_profile_file.write("\n")
         motif_profile_file.write(f"{str(round(q,4))}\n")
         motif_profile_file.write(f"{str(round(p, 4))}\n")
+    with open("motif_positions.txt","w") as motif_positions_file:
+        for seq in sequences:
+            motif_profile_file.write(f"{_viterbi(seq,emissiones,tau,q)}\n")
+
+
+
 
 
 
@@ -137,7 +143,7 @@ def main():
     seqs = readseqs( args.fasta )    
     # print(seqs)
     tau, p, q ,log_likelihood_history, emission= BaumWelch(seqs, emission, tau ,q, args.convergenceThr)
-    dump_results(log_likelihood_history, emission, p, q)
+    dump_results(log_likelihood_history, emission, p, q,seqs,tau)
     print(p,q)
 
 
