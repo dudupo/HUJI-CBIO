@@ -1,4 +1,6 @@
-from motif_find import transition_event, generate_tau, sample
+import emission as emission
+
+from motif_find import transition_event, generate_tau, sample , forward
 import argparse
 import numpy as np
 
@@ -14,15 +16,52 @@ def expectaion(seqs, emission, tau ,q):
     # print(p,q)
     return p,q 
 
+def compute_log_likelihood_for_sequences(sequences,tau,p,q,emissiones):
+    """
+    given a list of sequences transition probability matrix and probability to go in and out of a motif and emissiones
+    matrix returns the log likelihod for the sequences
+    :param sequences: the sequences
+    :param tau: transition probability matrix
+    :param p: probability to go in and out of a motif
+    :param q: probability to go out of a motif
+    :return: log likelihood of the sequences given tau p q
+    """
+    log_likelihood = 0
+    for seq in sequences:
+        log_likelihood += np.log(forward(seq,emissiones,tau,q))
+    return log_likelihood
+
+
+
+
 def BaumWelch(seqs, emission, tau, q, convergenceThr):
-    for j in range(20): #convergenceThr
+    result_history = []
+    # first iteration
+    p, q = expectaion(seqs, emission, tau, q)
+    tau[0][0], tau[0][1] = np.log(1 - p), np.log(p)
+    tau[-1][-1] = np.log(1 - p)
+    result_history.append(compute_log_likelihood_for_sequences(seqs, tau, p, q, emission))
+    # second iteration
+    p, q = expectaion(seqs, emission, tau, q)
+    tau[0][0], tau[0][1] = np.log(1 - p), np.log(p)
+    tau[-1][-1] = np.log(1 - p)
+    result_history.append(compute_log_likelihood_for_sequences(seqs, tau, p, q, emission))
+    while result_history[-1]-result_history[-2]> convergenceThr:
         p,q = expectaion(seqs, emission, tau ,q)
         tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
-        tau[-1][-1] = np.log(1-p) 
-    return tau, p, q
+        tau[-1][-1] = np.log(1-p)
+        result_history.append(compute_log_likelihood_for_sequences(seqs,tau,p,q,emission))
 
-def dump_results():
+    return tau, p, q,result_history
+
+def dump_results(result_history):
     # shaked
+    with open("ll_history.txt","w") as history_file:
+        for i in result_history:
+            history_file.write(f"{str(i)}\n")
+
+
+
     pass
 
 def parse_args():
@@ -65,7 +104,8 @@ def main():
     
     seqs = readseqs( args.fasta )    
     # print(seqs)
-    tau, p, q = BaumWelch(seqs, emission, tau ,q, args.convergenceThr)
+    tau, p, q ,log_likelihood_history= BaumWelch(seqs, emission, tau ,q, args.convergenceThr)
+    dump_results(log_likelihood_history)
     print(p,q)
 
 
