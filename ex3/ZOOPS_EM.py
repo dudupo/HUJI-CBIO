@@ -19,8 +19,9 @@ def expectaion(seqs, emission, tau ,q):
     # print()
     emissiontilde = stats[5:].reshape((len(tau),-1))
     print(emissiontilde.shape)
+    temp = emissiontilde.sum(axis=1)
     for j in range(4):
-        emissiontilde[:,j] /= emissiontilde.sum(axis=1)
+        emissiontilde[:,j] /= temp
     print(emissiontilde.shape)    
     # print(emissiontilde)
     print("-----------------------------------")
@@ -63,7 +64,7 @@ def BaumWelch(seqs, emission, tau, q, convergenceThr):
     tau[0][0], tau[0][1] = np.log(1 - p), np.log(p)
     tau[-1][-1] = np.log(1 - p)
     result_history.append(compute_log_likelihood_for_sequences(seqs, tau, p, q, emission))
-    for _ in range(0) : #while result_history[-1]-result_history[-2]> convergenceThr:
+    while result_history[-1]-result_history[-2]> convergenceThr:
         p,q, retemissions = expectaion(seqs, emission, tau ,q)
         emission = retemissions
         tau[0][0], tau[0][1] = np.log(1-p), np.log(p)

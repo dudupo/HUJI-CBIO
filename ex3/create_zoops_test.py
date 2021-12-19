@@ -28,7 +28,7 @@ def main():
     _file = open(_filename, "w+")
     _sample = sample(emission, tau ,q)
     _file.write(f">seq1\n{_sample}")
-    for _ in range(2,300):
+    for _ in range(2,40):
         _sample = sample(emission, tau ,q)
         _file.write(f"\n>seq{_}\n{_sample}")
     

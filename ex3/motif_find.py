@@ -191,7 +191,7 @@ def _viterbi(X, emission, tau, q):
     for i,state in enumerate(states):
         if (state > 0) and (state < (len(tau)-1)):
             return i               
-
+    return -1
 def generate_tau(initial_emission, p, q):
     emission = load_matrix( initial_emission )
 
