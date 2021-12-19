@@ -1,1 +1,1 @@
-python3 -W ignore ZOOPS_EM.py cases/seqs_ACGT_0.0a_0.9p_0.95q.fasta ACGT 0.4972142563538064 0.5748324311992417 0.0 1e-08
+python3 -W ignore ZOOPS_EM.py cases/seqs_ACGT_1e-06a_0.9p_0.95q.fasta ACGT 0.7066251997370645 0.5792999645690622 1e-06 1e-08

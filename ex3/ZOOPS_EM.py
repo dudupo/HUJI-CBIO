@@ -6,6 +6,7 @@ import numpy as np
 
 def expectaion(seqs, emission, tau ,q):
     '''given distributions returns the expectaion of the stats'''
+    # p = np.exp(tau[0][1])
     stats = np.array(list(map(\
         lambda x: transition_event(x, emission, tau, q), seqs)))
     stats = np.sum(stats, axis=0) #/ len(seqs) # Np,Nq
@@ -31,7 +32,7 @@ def expectaion(seqs, emission, tau ,q):
     for k in range(1,len(tau)-1):
         retemissions.append({ a : np.log(emissiontilde[k][AGCT(a)]) for a in ['A','G', 'C', 'T'] })
     retemissions.append({ a : np.log(0.25) for a in ['A','G', 'C', 'T'] })    
-    return p,q, retemissions
+    return p,q, emission
 
 def compute_log_likelihood_for_sequences(sequences,tau,p,q,emissiones):
     """
