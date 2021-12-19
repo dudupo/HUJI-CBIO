@@ -36,7 +36,7 @@ def is_output_correct(ret, seed):
 def run_test(mf, fasta, seed, timeout):
     # run test as subprocess
     try:
-        cmd = f'python3 {mf} {fasta} {seed} 0.05 0.9 0.1 0.1'
+        cmd = f'python3 {mf} {fasta} {seed} 0.05 0.9 0.1 1e-9'
         ret = subprocess.check_output(cmd, shell=True, timeout=timeout).decode()
     except Exception as e:
         print(f'Failed to run {mf} as a subprocess! ', e)
@@ -64,6 +64,7 @@ def main(args):
         for i in range(10):
             f.write(f'>seq{i + 1}\n')
             f.write('A' * (i + 2) + seed + 'A' * (15 - i) + '\n')
+            print('A' * (i + 2) + seed + 'A' * (15 - i) )
 
     run_test(mf, fasta, seed, 2)
 

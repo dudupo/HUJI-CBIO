@@ -110,12 +110,13 @@ def transition_event(X, emission, tau, q):
     
     
     stats_emis = np.zeros((tau.shape[0],4))
-    for k in range(tau.shape[0]):
+    for k in range(1,tau.shape[0]-1):
         for neckloied in ['A', 'G', 'C', 'T']:
             for i,char in enumerate(X):
                 if char == neckloied:
                     stats_emis[k][AGCT(char)] = logsumexp([stats_emis[k][AGCT(char)],\
-                         logsumexp((F[0:-2,k] + B[2:,k]) - F[-1][-1])])
+                         logsumexp((F[i+1,k] + B[i+2,k]) - F[-1][-1])])
+                    # print(stats_emis[k][AGCT(char)])
 
 
     

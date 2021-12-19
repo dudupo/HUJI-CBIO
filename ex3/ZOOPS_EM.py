@@ -9,9 +9,10 @@ def expectaion(seqs, emission, tau ,q):
     # p = np.exp(tau[0][1])
     stats = np.array(list(map(\
         lambda x: transition_event(x, emission, tau, q), seqs)))
+    print("-----------------------------------")
+    print(stats)
     stats = np.sum(stats, axis=0) #/ len(seqs) # Np,Nq
     # print(stats)
-    # print("-----------------------------------")
     # print(stats.shape)
     r = stats[0] + stats[1]
     h = stats[2] + stats[4] + stats[3] + r 
@@ -19,20 +20,20 @@ def expectaion(seqs, emission, tau ,q):
     
     # print()
     emissiontilde = stats[5:].reshape((len(tau),-1))
-    # print(emissiontilde.shape)
+    print(emissiontilde)
     temp = emissiontilde.sum(axis=1)
     # print(len(temp))
     for j in range(len(emissiontilde)):
         emissiontilde[j,:] /= temp[j]
     # print(emissiontilde.shape)    
-    # print(emissiontilde)
-    # print("-----------------------------------")
+    print(emissiontilde)
+    print("-----------------------------------")
     retemissions = [ ] 
     retemissions.append({ a : np.log(0.25) for a in ['A','G', 'C', 'T'] })
     for k in range(1,len(tau)-1):
         retemissions.append({ a : np.log(emissiontilde[k][AGCT(a)]) for a in ['A','G', 'C', 'T'] })
     retemissions.append({ a : np.log(0.25) for a in ['A','G', 'C', 'T'] })    
-    return p,q, emission
+    return p,q, retemissions
 
 def compute_log_likelihood_for_sequences(sequences,tau,p,q,emissiones):
     """
@@ -56,12 +57,16 @@ def BaumWelch(seqs, emission, tau, q, convergenceThr):
     result_history = []
     # first iteration
     p, q, retemissions = expectaion(seqs, emission, tau, q)
+    retemissions[0] = emission[0]
+    retemissions[-1] = emission[-1]
     emission = retemissions
     tau[0][0], tau[0][1] = np.log(1 - p), np.log(p)
     tau[-1][-1] = np.log(1 - p)
     result_history.append(compute_log_likelihood_for_sequences(seqs, tau, p, q, emission))
     # second iteration
     p, q, retemissions = expectaion(seqs, emission, tau, q)
+    retemissions[0] = emission[0]
+    retemissions[-1] = emission[-1]
     emission = retemissions
     tau[0][0], tau[0][1] = np.log(1 - p), np.log(p)
     tau[-1][-1] = np.log(1 - p)
@@ -70,6 +75,8 @@ def BaumWelch(seqs, emission, tau, q, convergenceThr):
     print(convergenceThr)
     while result_history[-1]-result_history[-2]> convergenceThr:
         p,q, retemissions = expectaion(seqs, emission, tau ,q)
+        retemissions[0] = emission[0]
+        retemissions[-1] = emission[-1]
         emission = retemissions
         tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
         tau[-1][-1] = np.log(1-p)

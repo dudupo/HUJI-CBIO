@@ -34,7 +34,8 @@ def main():
     
     from random import random
     def addnoise(prob):
-        return 0.5* ( prob + random())
+        return prob
+        #return 0.5* ( prob + random())
     
     pp, qq = addnoise(p), addnoise(q)
     
