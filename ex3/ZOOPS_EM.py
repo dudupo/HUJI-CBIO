@@ -1,6 +1,6 @@
 # import emission as emission
 
-from motif_find import transition_event, generate_tau, sample , forward, _viterbi
+from motif_find import transition_event, generate_tau, sample , forward, _viterbi, AGCT
 import argparse
 import numpy as np
 
@@ -10,11 +10,26 @@ def expectaion(seqs, emission, tau ,q):
         lambda x: transition_event(x, emission, tau, q), seqs)))
     stats = np.sum(stats, axis=0) #/ len(seqs) # Np,Nq
     # print(stats)
+    print("-----------------------------------")
+    print(stats.shape)
     r = stats[0] + stats[1]
     h = stats[2] + stats[4] + stats[3] + r 
     q,p = stats[0] / r , (stats[4]+ r) / h
-    # print(p,q)
-    return p,q 
+    
+    # print()
+    emissiontilde = stats[5:].reshape((len(tau),-1))
+    print(emissiontilde.shape)
+    for j in range(4):
+        emissiontilde[:,j] /= emissiontilde.sum(axis=1)
+    print(emissiontilde.shape)    
+    # print(emissiontilde)
+    print("-----------------------------------")
+    retemissions = [ ] 
+    retemissions.append({ a : np.log(0.25) for a in ['A','G', 'C', 'T'] })
+    for k in range(1,len(tau)-1):
+        retemissions.append({ a : np.log(emissiontilde[k][AGCT(a)]) for a in ['A','G', 'C', 'T'] })
+    retemissions.append({ a : np.log(0.25) for a in ['A','G', 'C', 'T'] })    
+    return p,q, retemissions
 
 def compute_log_likelihood_for_sequences(sequences,tau,p,q,emissiones):
     """
@@ -37,22 +52,25 @@ def compute_log_likelihood_for_sequences(sequences,tau,p,q,emissiones):
 def BaumWelch(seqs, emission, tau, q, convergenceThr):
     result_history = []
     # first iteration
-    p, q = expectaion(seqs, emission, tau, q)
+    p, q, retemissions = expectaion(seqs, emission, tau, q)
+    emission = retemissions
     tau[0][0], tau[0][1] = np.log(1 - p), np.log(p)
     tau[-1][-1] = np.log(1 - p)
     result_history.append(compute_log_likelihood_for_sequences(seqs, tau, p, q, emission))
     # second iteration
-    p, q = expectaion(seqs, emission, tau, q)
+    p, q, retemissions = expectaion(seqs, emission, tau, q)
+    emission = retemissions
     tau[0][0], tau[0][1] = np.log(1 - p), np.log(p)
     tau[-1][-1] = np.log(1 - p)
     result_history.append(compute_log_likelihood_for_sequences(seqs, tau, p, q, emission))
-    while result_history[-1]-result_history[-2]> convergenceThr:
-        p,q = expectaion(seqs, emission, tau ,q)
+    for _ in range(0) : #while result_history[-1]-result_history[-2]> convergenceThr:
+        p,q, retemissions = expectaion(seqs, emission, tau ,q)
+        emission = retemissions
         tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
         tau[-1][-1] = np.log(1-p)
         result_history.append(compute_log_likelihood_for_sequences(seqs,tau,p,q,emission))
 
-    return tau, p, q,result_history
+    return tau, p, q,result_history, emission
 
 def dump_results(result_history,emissiones,p,q):
     """write results"""
@@ -64,7 +82,7 @@ def dump_results(result_history,emissiones,p,q):
     with open("motif_profile.txt","w") as motif_profile_file:
         for base in ["A","C","G","T"]:
             for s in emissiones[1:-1]:
-                motif_profile_file.write(f"{str(round(s[base],2))}\t")
+                motif_profile_file.write(f"{str(round(np.exp(s[base]),2))}\t")
             motif_profile_file.write("\n")
         motif_profile_file.write(f"{str(round(q,4))}\n")
         motif_profile_file.write(f"{str(round(p, 4))}\n")
@@ -117,7 +135,7 @@ def main():
     
     seqs = readseqs( args.fasta )    
     # print(seqs)
-    tau, p, q ,log_likelihood_history= BaumWelch(seqs, emission, tau ,q, args.convergenceThr)
+    tau, p, q ,log_likelihood_history, emission= BaumWelch(seqs, emission, tau ,q, args.convergenceThr)
     dump_results(log_likelihood_history, emission, p, q)
     print(p,q)
 

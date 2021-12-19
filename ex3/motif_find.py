@@ -90,6 +90,10 @@ def printHiddens(X, emission, tau, states):
         print(bottom_line)
         print()
 
+
+def AGCT(char):
+    return int({'A':0, 'G':1, 'C':2, 'T':3}[char])
+
 from itertools import product
 def transition_event(X, emission, tau, q):
     F = np.log(forward(X, emission, tau, q))
@@ -104,8 +108,21 @@ def transition_event(X, emission, tau, q):
             stats[k][l] = logsumexp((F[0:-2,k] + B[2:,l])\
                  + tau[k,l] + emissions[l] - F[-1][-1])
     
+    
+    stats_emis = np.zeros((tau.shape[0],4))
+    for k in range(tau.shape[0]):
+        for neckloied in ['A', 'G', 'C', 'T']:
+            for i,char in enumerate(X):
+                if char == neckloied:
+                    stats_emis[k][AGCT(char)] = logsumexp([stats_emis[k][AGCT(char)],\
+                         logsumexp((F[0:-2,k] + B[2:,k]) - F[-1][-1])])
+
+
+    
     Nnq  = np.log(1- q) + B[1][-1] - F[-1][-1]
     Nq = np.log(q) + B[1][0] - F[-1][-1]
+
+    
 
     S = np.exp( np.array([
         Nq, 
@@ -120,7 +137,7 @@ def transition_event(X, emission, tau, q):
     # print( "#######")
     # print([Np , Nnp, Nq, Nnq]) 
     # print( "#######")
-    return S
+    return  np.hstack((S, np.exp(stats_emis.flatten())))
 
 def posterior(X, emission, tau, q):
     F = np.log(forward(X, emission, tau, q))
