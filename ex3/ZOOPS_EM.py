@@ -12,32 +12,29 @@ def expectaion(seqs, emission, tau ,q):
 
     S, emit =  transition_event(seqs[0], emission, tau, q)
     S, emit = np.exp(S), np.exp(emit)
-    S -= 1
     emit -= 1
-    for seq in seqs:
+    for seq in seqs[1:]:
         _S, _emit =  transition_event(seq, emission, tau, q)
         S += np.exp(_S)
         emit += np.exp(_emit)
-        S -= 1
         emit -= 1
-        # S = logsumexp([S, _S])
-        # emit = logsumexp([emit, _emit])
     print(S)
-    # stats = np.array(list(map(\
-    #     lambda x: transition_event(x, emission, tau, q), seqs)))
-
     print("-----------------------------------")
     r = S[0] + S[1]
     h =  S[2] + S[3] #stats[2], stats[3]]) 
 
-    q,p = S[0]/r , S[2]/h
-    # q,p = np.exp(q), np.exp(p)
+    # q,p = S[0]/r , S[2]/h
+    q = S[0]/r
+    print(h)
+    print(S[2])
+    p = S[2]/h
+    print(p)
     emissiontilde = emit #stats[4:].reshape((len(tau)-2,4))
 
     temp =  np.sum(emissiontilde, axis=1)
     for j in range(len(emissiontilde)):
-        emissiontilde[j] = np.divide(emissiontilde[j], temp[j] , out=np.zeros_like(emissiontilde[j]), where=temp[j]  != 0)
-         # /=   #logsumexp(emissiontilde[j])
+        emissiontilde[j] = np.divide(emissiontilde[j], temp[j],\
+             out=np.zeros_like(emissiontilde[j]), where=temp[j]  != 0)
     print(emissiontilde)
 
     # print("-----------------------------------")
@@ -58,25 +55,18 @@ def compute_log_likelihood_for_sequences(sequences,tau,p,q,emissiones):
     :param q: probability to go out of a motif
     :return: log likelihood of the sequences given tau p q
     """
-    return logsumexp ([ np.log(forward(seq,emissiones,tau,q)[-1][-1]) for seq in sequences ])
+    return np.sum ([ np.log(forward(seq,emissiones,tau,q)[-1][-1]) for seq in sequences ])
 
 
 
 
 def BaumWelch(seqs, emission, tau, q, convergenceThr):
+    retemission, retp, retq = emission, np.exp(tau[0][1]), q
     result_history = []
-    # first iteration
-    # p, q, retemissions = expectaion(seqs, emission, tau, q)
+    result_history.append(compute_log_likelihood_for_sequences(seqs, tau, np.exp(tau[0][1]), q, emission))
+    p, q, retemissions = expectaion(seqs, emission, tau, q)
     # retemissions[0] = emission[0]
     # retemissions[-1] = emission[-1]
-    # emission = retemissions
-    # tau[0][0], tau[0][1] = np.log(1 - p), np.log(p)
-    # tau[-1][-1] = np.log(1 - p)
-    result_history.append(compute_log_likelihood_for_sequences(seqs, tau, np.exp(tau[0][1]), q, emission))
-    # second iteration
-    p, q, retemissions = expectaion(seqs, emission, tau, q)
-    retemissions[0] = emission[0]
-    retemissions[-1] = emission[-1]
     emission = retemissions
     tau[0][0], tau[0][1] = np.log(1 - p), np.log(p)
     tau[-1][-1] = np.log(1 - p)
@@ -84,6 +74,7 @@ def BaumWelch(seqs, emission, tau, q, convergenceThr):
 
 
     while (result_history[-1]-result_history[-2]) > convergenceThr:
+        retemission, retp, retq = emission, np.exp(tau[0][1]), q
         p,q, retemissions = expectaion(seqs, emission, tau ,q)
         retemissions[0] = emission[0]
         retemissions[-1] = emission[-1]
@@ -91,8 +82,9 @@ def BaumWelch(seqs, emission, tau, q, convergenceThr):
         tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
         tau[-1][-1] = np.log(1-p)
         result_history.append(compute_log_likelihood_for_sequences(seqs,tau,p,q,emission))
-
-    return tau, p, q,result_history, emission
+        
+    result_history.pop(-1)
+    return tau, retp, retq,result_history, retemission
 
 def dump_results(result_history, emissiones, p, q, sequences,tau):
     """write results"""
@@ -105,8 +97,8 @@ def dump_results(result_history, emissiones, p, q, sequences,tau):
         # print(emissiones)
         for base in ["A","C","G","T"]:
             for s in emissiones[1:-2]:
-                motif_profile_file.write(f"{str(np.exp(s[base]))}\t")
-            motif_profile_file.write(f"{str(np.exp(emissiones[-2][base]))}")
+                motif_profile_file.write(f"{str(round(np.exp(s[base]),2))}\t")
+            motif_profile_file.write(f"{str(round(np.exp(emissiones[-2][base]),2))}")
             motif_profile_file.write("\n")
         motif_profile_file.write(f"{str(round(q,4))}\n")
         motif_profile_file.write(f"{str(round(p, 4))}")
