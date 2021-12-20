@@ -105,40 +105,32 @@ def transition_event(X, emission, tau, q):
     
     for k in range(tau.shape[0]):
         for l in range(tau.shape[0]): 
-            stats[k][l] = logsumexp((F[0:-2,k] + B[2:,l])\
-                 + tau[k,l] + emissions[l] - F[-1][-1])
+            stats[k][l] = logsumexp((F[0:-2,k] + B[2:,l] - F[-1][-1])\
+                 + tau[k,l] + emissions[l])
     
     
-    stats_emis = np.zeros((tau.shape[0],4))
-    for k in range(1,tau.shape[0]-1):
+    stats_emis = np.zeros((tau.shape[0]-2,4))
+    for k in range(tau.shape[0]-2):
         for neckloied in ['A', 'G', 'C', 'T']:
             for i,char in enumerate(X):
                 if char == neckloied:
                     stats_emis[k][AGCT(char)] = logsumexp([stats_emis[k][AGCT(char)],\
-                         logsumexp((F[i+1,k] + B[i+2,k]) - F[-1][-1])])
-                    # print(stats_emis[k][AGCT(char)])
-
-
+                         F[i,k+1] + B[i+1,k+1] - F[-1][-1]])
     
     Nnq  = np.log(1- q) + B[1][-1] - F[-1][-1]
     Nq = np.log(q) + B[1][0] - F[-1][-1]
 
-    
-
-    S = np.exp( np.array([
+    Np = logsumexp([stats[0][1], tau[0][1] - F[-1][-1] ]) 
+    Nnp = logsumexp([ stats[0][0], stats[-1][-1]])
+    S = np.array([
         Nq, 
         Nnq,
-        stats[0][0],
-        stats[-1][-1],
-        stats[0][1]
-    ]))    
-
-    # Nnp = np.exp(stats[0][0]) + np.exp(stats[-1][-1])
-    # Np =  np.exp(stats[0][1]) + 1 
-    # print( "#######")
-    # print([Np , Nnp, Nq, Nnq]) 
-    # print( "#######")
-    return  np.hstack((S, np.exp(stats_emis.flatten())))
+        Np,
+        Nnp
+    ])   
+    ret = np.hstack((S, stats_emis.flatten()))
+    # print(ret)
+    return S, stats_emis 
 
 def posterior(X, emission, tau, q):
     F = np.log(forward(X, emission, tau, q))
@@ -218,11 +210,9 @@ def sample(emission, tau, q):
             uni_sample, current_prob = random(), 0
             for char, prob in emission[_].items():
                 current_prob += np.exp(prob)
-                # print(char, prob)
                 if uni_sample < current_prob: 
                     motif.append(char)
                     break
-        print("".join(motif))
         return motif
    
     p = _tau[0][1] 

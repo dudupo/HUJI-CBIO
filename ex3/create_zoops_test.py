@@ -28,7 +28,7 @@ def main():
     _file = open(_filename, "w+")
     _sample = sample(emission, tau ,q)
     _file.write(f">seq1\n{_sample}")
-    for _ in range(2,200):
+    for _ in range(40):
         _sample = sample(emission, tau ,q)
         _file.write(f"\n>seq{_}\n{_sample}")
     
@@ -39,7 +39,7 @@ def main():
     
     pp, qq = addnoise(p), addnoise(q)
     
-    command = f"python3 -W ignore ZOOPS_EM.py {_filename} {args.seed} {pp} {qq} {args.alpha} {args.convergenceThr}\n"
+    command = f"python3 -W ignore ZOOPS_EM.py {_filename} {args.seed} 0.5 0.5 0.12 {args.convergenceThr}\n"
     open("generated_tests.sh", "a+").write(command)
 
 if __name__ == '__main__':

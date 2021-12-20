@@ -1,1 +1,1 @@
-python3 -W ignore ZOOPS_EM.py cases/seqs_AGCT_0.0a_0.1p_1.0q.fasta AGCT 0.1 1.0 0.0 1e-10
+python3 -W ignore ZOOPS_EM.py cases/seqs_AAAAAAA_0.0a_0.3p_0.99q.fasta AAAAAAA 0.5 0.5 0.12 1e-10

@@ -3,34 +3,42 @@
 from motif_find import transition_event, generate_tau, sample , forward, _viterbi, AGCT
 import argparse
 import numpy as np
+from scipy.special import logsumexp
+
 
 def expectaion(seqs, emission, tau ,q):
     '''given distributions returns the expectaion of the stats'''
-    # p = np.exp(tau[0][1])
-    stats = np.array(list(map(\
-        lambda x: transition_event(x, emission, tau, q), seqs)))
-    print("-----------------------------------")
-    print(stats)
-    stats = np.sum(stats, axis=0) #/ len(seqs) # Np,Nq
-    # print(stats)
-    # print(stats.shape)
-    r = stats[0] + stats[1]
-    h = stats[2] + stats[4] + stats[3] + r 
-    q,p = stats[0] / r , (stats[4]+ r) / h
+    p = np.exp(tau[0][1])
     
-    # print()
-    emissiontilde = stats[5:].reshape((len(tau),-1))
-    print(emissiontilde)
-    temp = emissiontilde.sum(axis=1)
-    # print(len(temp))
-    for j in range(len(emissiontilde)):
-        emissiontilde[j,:] /= temp[j]
-    # print(emissiontilde.shape)    
-    print(emissiontilde)
+    S, emit =  transition_event(seqs[0], emission, tau, q)
+    S, emit = np.exp(S), np.exp(emit)
+    for seq in seqs:
+        _S, _emit =  transition_event(seq, emission, tau, q)
+        S += np.exp(_S)
+        emit += np.exp(_emit)
+        # S = logsumexp([S, _S])
+        # emit = logsumexp([emit, _emit])
+    print(S)
+    # stats = np.array(list(map(\
+    #     lambda x: transition_event(x, emission, tau, q), seqs)))
+
     print("-----------------------------------")
+    r = S[0] + S[1]
+    h =  S[2] + S[3] #stats[2], stats[3]]) 
+    
+    q,p = S[0]/r , S[2]/h 
+    # q,p = np.exp(q), np.exp(p)
+    emissiontilde = emit #stats[4:].reshape((len(tau)-2,4))
+    
+    temp =  np.sum(emissiontilde, axis=1)
+    for j in range(len(emissiontilde)):
+        emissiontilde[j] /=  temp[j] #logsumexp(emissiontilde[j])
+    print(emissiontilde)
+
+    # print("-----------------------------------")
     retemissions = [ ] 
     retemissions.append({ a : np.log(0.25) for a in ['A','G', 'C', 'T'] })
-    for k in range(1,len(tau)-1):
+    for k in range(len(tau)-2):
         retemissions.append({ a : np.log(emissiontilde[k][AGCT(a)]) for a in ['A','G', 'C', 'T'] })
     retemissions.append({ a : np.log(0.25) for a in ['A','G', 'C', 'T'] })    
     return p,q, retemissions
@@ -45,10 +53,7 @@ def compute_log_likelihood_for_sequences(sequences,tau,p,q,emissiones):
     :param q: probability to go out of a motif
     :return: log likelihood of the sequences given tau p q
     """
-    log_likelihood = 0
-    for seq in sequences:
-        log_likelihood += np.log(forward(seq,emissiones,tau,q)[-1][-1])
-    return log_likelihood
+    return logsumexp ([ np.log(forward(seq,emissiones,tau,q)[-1][-1]) for seq in sequences ])
 
 
 
@@ -56,13 +61,13 @@ def compute_log_likelihood_for_sequences(sequences,tau,p,q,emissiones):
 def BaumWelch(seqs, emission, tau, q, convergenceThr):
     result_history = []
     # first iteration
-    p, q, retemissions = expectaion(seqs, emission, tau, q)
-    retemissions[0] = emission[0]
-    retemissions[-1] = emission[-1]
-    emission = retemissions
-    tau[0][0], tau[0][1] = np.log(1 - p), np.log(p)
-    tau[-1][-1] = np.log(1 - p)
-    result_history.append(compute_log_likelihood_for_sequences(seqs, tau, p, q, emission))
+    # p, q, retemissions = expectaion(seqs, emission, tau, q)
+    # retemissions[0] = emission[0]
+    # retemissions[-1] = emission[-1]
+    # emission = retemissions
+    # tau[0][0], tau[0][1] = np.log(1 - p), np.log(p)
+    # tau[-1][-1] = np.log(1 - p)
+    result_history.append(compute_log_likelihood_for_sequences(seqs, tau, np.exp(tau[0][1]), q, emission))
     # second iteration
     p, q, retemissions = expectaion(seqs, emission, tau, q)
     retemissions[0] = emission[0]
@@ -71,9 +76,9 @@ def BaumWelch(seqs, emission, tau, q, convergenceThr):
     tau[0][0], tau[0][1] = np.log(1 - p), np.log(p)
     tau[-1][-1] = np.log(1 - p)
     result_history.append(compute_log_likelihood_for_sequences(seqs, tau, p, q, emission))
-    print(result_history[-1]-result_history[-2])
-    print(convergenceThr)
-    while result_history[-1]-result_history[-2]> convergenceThr:
+
+
+    while (result_history[-1]-result_history[-2]) > convergenceThr:
         p,q, retemissions = expectaion(seqs, emission, tau ,q)
         retemissions[0] = emission[0]
         retemissions[-1] = emission[-1]
