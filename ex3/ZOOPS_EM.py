@@ -9,13 +9,17 @@ from scipy.special import logsumexp
 def expectaion(seqs, emission, tau ,q):
     '''given distributions returns the expectaion of the stats'''
     p = np.exp(tau[0][1])
-    
+
     S, emit =  transition_event(seqs[0], emission, tau, q)
     S, emit = np.exp(S), np.exp(emit)
+    S -= 1
+    emit -= 1
     for seq in seqs:
         _S, _emit =  transition_event(seq, emission, tau, q)
         S += np.exp(_S)
         emit += np.exp(_emit)
+        S -= 1
+        emit -= 1
         # S = logsumexp([S, _S])
         # emit = logsumexp([emit, _emit])
     print(S)
@@ -25,22 +29,23 @@ def expectaion(seqs, emission, tau ,q):
     print("-----------------------------------")
     r = S[0] + S[1]
     h =  S[2] + S[3] #stats[2], stats[3]]) 
-    
-    q,p = S[0]/r , S[2]/h 
+
+    q,p = S[0]/r , S[2]/h
     # q,p = np.exp(q), np.exp(p)
     emissiontilde = emit #stats[4:].reshape((len(tau)-2,4))
-    
+
     temp =  np.sum(emissiontilde, axis=1)
     for j in range(len(emissiontilde)):
-        emissiontilde[j] /=  temp[j] #logsumexp(emissiontilde[j])
+        emissiontilde[j] = np.divide(emissiontilde[j], temp[j] , out=np.zeros_like(emissiontilde[j]), where=temp[j]  != 0)
+         # /=   #logsumexp(emissiontilde[j])
     print(emissiontilde)
 
     # print("-----------------------------------")
-    retemissions = [ ] 
+    retemissions = [ ]
     retemissions.append({ a : np.log(0.25) for a in ['A','G', 'C', 'T'] })
     for k in range(len(tau)-2):
         retemissions.append({ a : np.log(emissiontilde[k][AGCT(a)]) for a in ['A','G', 'C', 'T'] })
-    retemissions.append({ a : np.log(0.25) for a in ['A','G', 'C', 'T'] })    
+    retemissions.append({ a : np.log(0.25) for a in ['A','G', 'C', 'T'] })
     return p,q, retemissions
 
 def compute_log_likelihood_for_sequences(sequences,tau,p,q,emissiones):

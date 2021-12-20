@@ -115,7 +115,7 @@ def transition_event(X, emission, tau, q):
             for i,char in enumerate(X):
                 if char == neckloied:
                     stats_emis[k][AGCT(char)] = logsumexp([stats_emis[k][AGCT(char)],\
-                         F[i,k+1] + B[i+1,k+1] - F[-1][-1]])
+                         F[i+1,k+1] + B[i+1,k+1] - F[-1][-1]])
     
     Nnq  = np.log(1- q) + B[1][-1] - F[-1][-1]
     Nq = np.log(q) + B[1][0] - F[-1][-1]
