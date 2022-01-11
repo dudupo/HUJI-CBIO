@@ -115,21 +115,19 @@ def transition_event(X, emission, tau, q):
             for i,char in enumerate(X):
                 if char == neckloied:
                     stats_emis[k][AGCT(char)] = logsumexp([stats_emis[k][AGCT(char)],\
-                         F[i+1,k+1] + B[i+1,k+1] - F[-1][-1]])
+                         F[i,k+1] + B[i+1,k+1] - F[-1][-1]])
     
     Nnq  = np.log(1- q) + B[1][-1] - F[-1][-1]
     Nq = np.log(q) + B[1][0] - F[-1][-1]
 
-    Np = logsumexp([ np.log(2) + stats[0][1],  stats[0][-1]  ]) #, tau[0][1] - F[-1][-1] 
-    Nnp = logsumexp([ stats[0][0], stats[-1][-1]]) #  
+    Np = logsumexp([stats[0][1] , stats[-2][-1]]) # logsumexp([  , np.log(2)])
+    Nnp = logsumexp([ stats[0][0], stats[-1][-1]]) 
     S = np.array([
         Nq, 
         Nnq,
         Np,
         Nnp
     ])   
-    ret = np.hstack((S, stats_emis.flatten()))
-    # print(ret)
     return S, stats_emis 
 
 def posterior(X, emission, tau, q):
@@ -144,14 +142,14 @@ def viterbi(X, emission, tau, q):
         F = np.ones(shape=(n,m) ) * -np.inf
         P = np.zeros(shape=(n,m) )
         
-        F[0][0] = np.log(q) + emission[0][X[0]]
-        F[0][-1] = np.log(1- q) + emission[-1][X[0]]
+        F[0][0] = np.log(q) #+ emission[0][X[0]]
+        F[0][-1] = np.log(1- q) #+ emission[-1][X[0]]
 
         for i in range(1,n):
             for l in range(m):
-                F[i][l] =  np.max( emission[l][X[i]] + F[i-1] + (tau.T)[l])
+                F[i][l] = emission[l][X[i-1]] + ( logsumexp( F[i-1] + (tau.T)[l]))
                 P[i][l] = int(np.argmax( emission[l][X[i]] + F[i-1] + (tau.T)[l]))
-        F[-1][-1] += tau[0][1]
+        F[-1][-1] = F[-2][-1] +  tau[0][1] - tau[0][0]
         return np.exp(F), P
 
     F, P = vitforward()
@@ -166,14 +164,14 @@ def _viterbi(X, emission, tau, q):
         F = np.ones(shape=(n,m) ) * -np.inf
         P = np.zeros(shape=(n,m) )
         
-        F[0][0] = np.log(q) + emission[0][X[0]]
-        F[0][-1] = np.log(1- q) + emission[-1][X[0]]
+        F[0][0] = np.log(q) #+ emission[0][X[0]]
+        F[0][-1] = np.log(1- q) #+ emission[-1][X[0]]
 
         for i in range(1,n):
             for l in range(m):
-                F[i][l] =  np.max( emission[l][X[i]] + F[i-1] + (tau.T)[l])
+                F[i][l] = emission[l][X[i-1]] + ( logsumexp( F[i-1] + (tau.T)[l]))
                 P[i][l] = int(np.argmax( emission[l][X[i]] + F[i-1] + (tau.T)[l]))
-        F[-1][-1] += tau[0][1]
+        F[-1][-1] = F[-2][-1] +  tau[0][1] - tau[0][0]
         return np.exp(F), P
 
     F, P = vitforward()

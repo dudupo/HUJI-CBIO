@@ -1,0 +1,456 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass heb-article
+\use_default_options true
+\maintain_unincluded_children false
+\language hebrew
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "David CLM"
+\font_sans "default" "David CLM"
+\font_typewriter "default" "David CLM"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts true
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize a4paper
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2cm
+\topmargin 1cm
+\rightmargin 2cm
+\bottommargin 1cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+תרגיל
+\family roman
+\series medium
+\shape up
+\size largest
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\numeric on
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+4
+\numeric off
+.
+\end_layout
+
+\begin_layout Standard
+שקד ריבר ודויד פונרובסקי.
+ 
+\end_layout
+
+\begin_layout Subsection*
+תרגיל
+\family roman
+\series bold
+\shape up
+\size large
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\numeric on
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+1
+\numeric off
+.
+\end_layout
+
+\begin_layout Standard
+נמצא את 
+\begin_inset Formula $arg\max_{t}P\left(t|a,b\right)$
+\end_inset
+
+ :
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+P\left(t|a,b\right) & =\prod_{i}\pi_{a_{i}}\left[e^{t\boldsymbol{R}}\right]_{a_{i},b_{j}}=\left(\prod_{\xi=a_{i}=b_{j}}\frac{\pi_{\xi}}{4}\left(1+3e^{-4\alpha t}\right)\right)\left(\prod_{\xi\neq\eta}\frac{\pi_{\xi}}{4}\left(1-3e^{-4\alpha t}\right)\right)=\\
+ & =\left(\prod_{\xi}\left(\frac{\pi_{\xi}}{4}\left(1+3e^{-4\alpha t}\right)\right)^{N_{\xi,\xi}}\right)\left(\left(\prod_{\xi\neq\eta}\frac{\pi_{\xi}}{4}\left(1-e^{-4\alpha t}\right)\right)^{N_{\xi,\eta}}\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+כלומר בהנתן מספר ההופעות של 
+\begin_inset Formula $N_{\xi,\eta}=\sum_{i}\boldsymbol{1}\left\{ a_{i}=\xi,b_{i}=\eta\right\} $
+\end_inset
+
+ ו 
+\begin_inset Formula $t$
+\end_inset
+
+- אנו מסוגלים לחשב את ההסתברות ולכן הם ה -
+\begin_inset Formula $\text{sufficient statistics}$
+\end_inset
+
+.
+ נמשיך בחישוב כדי לשערך את 
+\begin_inset Formula $\hat{t}$
+\end_inset
+
+.
+ נשתמש בזהות הבאה לנגזרת של מכפלה:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+f & =\left(\prod A_{i}\right)\Rightarrow\partial f=\sum_{j}\left(\prod_{i\ne j}A_{i}\right)\cdot\partial A_{j}=\sum_{j}\left(\prod_{i}A_{i}\right)\cdot\frac{\partial A_{j}}{A_{i}}=\\
+ & =f\cdot\left(\sum_{j}\frac{\partial A_{j}}{A_{i}}\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+ולכן
+\begin_inset Formula 
+\begin{align*}
+\partial_{t}P\left(t|a,b\right) & =P\left(t|a,b\right)\left(\sum_{\xi}\frac{-12\alpha e^{-4\alpha t}}{\left(1+3e^{-4\alpha t}\right)}N_{\xi,\xi}+\sum_{\xi\neq\eta}\frac{4\alpha e^{-4\alpha t}}{\left(1-e^{-4\alpha t}\right)}N_{\xi,\eta}\right)=\\
+ & =P\left(t|a,b\right)4\alpha e^{-4\alpha t}\left(\frac{-3}{\left(1+3e^{-4\alpha t}\right)}\sum_{\xi}N_{\xi,\xi}+\frac{1}{\left(1-e^{-4\alpha t}\right)}\sum_{\xi\neq\eta}N_{\xi,\eta}\right)=\\
+ & =P\left(t|a,b\right)4\alpha e^{-4\alpha t}\left(\frac{-3}{\left(1+3e^{-4\alpha t}\right)}\sum_{\xi}N_{\xi,\xi}+\frac{1}{\left(1-e^{-4\alpha t}\right)}\left(N-\sum_{\xi}N_{\xi,\xi}\right)\right)=0\\
+ & \overset{\phi}{\overbrace{\frac{3\sum_{\xi}N_{\xi,\xi}}{\left(N-\sum_{\xi}N_{\xi,\xi}\right)}}}=\frac{\left(1-e^{-4\alpha t}\right)}{\left(1+3e^{-4\alpha t}\right)}\Rightarrow\left(3\phi+1\right)e^{-4\alpha t}=1-\phi\Rightarrow\\
+ & \hat{t}=\frac{1}{4\alpha}\ln\frac{3\phi+1}{1-\phi}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+כלומר, קיבלנו כי אנו זקוקים לפרמטר 
+\begin_inset Formula $\phi=\frac{3\sum_{\xi}N_{\xi,\xi}}{\left(N-\sum_{\xi}N_{\xi,\xi}\right)}$
+\end_inset
+
+ כדי לשערך את 
+\begin_inset Formula $\hat{t}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Subsection*
+תרגיל
+\family roman
+\series bold
+\shape up
+\size large
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\numeric on
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+2
+\numeric off
+.
+ 
+\end_layout
+
+\begin_layout Enumerate
+נחפש מטריצת 
+\begin_inset Formula $R$
+\end_inset
+
+ המגדירה 
+\begin_inset Formula $P\left(t\right)$
+\end_inset
+
+ ש 
+\begin_inset Formula $\left(\frac{1}{n}\vec{1}\right)^{\top}P=\left(\frac{1}{n}\vec{1}\right)^{\top}$
+\end_inset
+
+ אך 
+\begin_inset Formula $R$
+\end_inset
+
+ אינה רורסבילית.
+ דוגמא 
+\begin_inset Formula $R=\frac{1}{4}\left[\begin{array}{cccc}
+ & 1\\
+ &  & 1\\
+ &  &  & 1\\
+1
+\end{array}\right]$
+\end_inset
+
+ מיצד אחד 
+\begin_inset Formula $R$
+\end_inset
+
+ היא המעגל 
+\begin_inset Formula $\mathbb{Z}_{4}$
+\end_inset
+
+, כלומר מטריצת שכנויות של גרף 
+\begin_inset Formula $1$
+\end_inset
+
+-רגולרי ולכן 
+\begin_inset Formula $\vec{1}$
+\end_inset
+
+ הוא ו
+\begin_inset Quotes erd
+\end_inset
+
+ע שלה ולכן ההתפלגות האחידה היא אחת מבין ההתפלגויות הסטצניוריות שלה.
+ מצד שני, 
+\begin_inset Formula $R$
+\end_inset
+
+ אינה רורסבילית.
+ 
+\end_layout
+
+\begin_layout Enumerate
+ניסתכל על המטריצה 
+\begin_inset Formula $R=\left[\begin{array}{cccc}
+ & 1\\
+1 &  & 1\\
+ & 1 &  & 1\\
+ &  & 1
+\end{array}\right]$
+\end_inset
+
+ מצד אחד 
+\begin_inset Formula $R=R^{\top}$
+\end_inset
+
+ ולכן 
+\begin_inset Formula $e^{tR}$
+\end_inset
+
+ אוניטרית ומכאן גם רורסבילית.
+ מצד שני, 
+\begin_inset Formula $\vec{1}^{\top}R=\left[\begin{array}{c}
+1\\
+2\\
+2\\
+1
+\end{array}\right]$
+\end_inset
+
+ כלומר ההתפלגות האחידה אינה התפלגות סטציונרית של 
+\begin_inset Formula $R$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Subsection*
+תרגיל
+\family roman
+\series bold
+\shape up
+\size large
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+ 
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\numeric on
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+3
+\numeric off
+.
+\end_layout
+
+\begin_layout Enumerate
+נשאל מה ההסתברות עבור המאורע 
+\begin_inset Formula $X_{i}\overset{t}{\rightsquigarrow}X_{j}$
+\end_inset
+
+ כי היות ו
+\begin_inset Formula $R$
+\end_inset
+
+ ארגודית אז הסתברות סימטרית באופן אסימפטוטי לשיקוף בציר הזמן כלומר 
+\begin_inset Formula $P\left(X_{i}\overset{t}{\rightsquigarrow}X_{j}\right)P\left(X_{j}\rightsquigarrow\infty\right)=P\left(-\infty\rightsquigarrow X_{i}\right)P\left(X_{i}\overset{t}{\rightsquigarrow}X_{j}\right)$
+\end_inset
+
+ ולכן 
+\begin_inset Formula $P\left(X_{i}\overset{t}{\rightsquigarrow}X_{j}\right)=\frac{P\left(-\infty\rightsquigarrow X_{i}\right)}{P\left(X_{j}\rightsquigarrow\infty\right)}P\left(X_{i}\overset{t}{\rightsquigarrow}X_{j}\right)=\frac{\pi_{X_{i}}}{\pi_{X_{j}}}\left[e^{t\boldsymbol{R}}\right]_{X_{i},X_{j}}$
+\end_inset
+
+ מכאן ש 
+\begin_inset Formula 
+\[
+LL\left(T\right)=\prod_{\left\{ i,j\right\} \in E}\frac{\pi_{X_{i}}}{\pi_{X_{j}}}\left[e^{t\boldsymbol{R}}\right]_{X_{i},X_{j}}=\prod_{i\in V\text{and not leaf}}\pi_{X_{i}}\prod_{\left\{ i,j\right\} \in E}\frac{1}{\pi_{X_{j}}}\left[e^{t\boldsymbol{R}}\right]_{X_{i},X_{j}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+מאחר ו 
+\begin_inset Formula $R$
+\end_inset
+
+ רורסבילית, כלומר התהליך סימטרי לזמן גם באופן לוקלי אז 
+\begin_inset Formula $P\left(X_{i}\overset{t}{\rightsquigarrow}X_{j}\right)=P\left(X_{j}\overset{t}{\rightsquigarrow}X_{i}\right)$
+\end_inset
+
+ ולכן: 
+\begin_inset Formula $\frac{\pi_{X_{i}}}{\pi_{X_{j}}}\left[e^{t\boldsymbol{R}}\right]_{X_{i},X_{j}}=\frac{\pi_{X_{j}}}{\pi_{X_{i}}}\left[e^{t\boldsymbol{R}}\right]_{X_{j},X_{i}}$
+\end_inset
+
+.
+ מכאן שלכל שינוי הכיוונים שנבחר עבור 
+\begin_inset Formula $E$
+\end_inset
+
+ )כולל השמות 
+\begin_inset Formula $DAG$
+\end_inset
+
+ לא הגיוניות( נקבל כי המכפלה 
+\begin_inset Formula $LL\left(T\right)$
+\end_inset
+
+ תשאר זהה.
+ 
+\end_layout
+
+\end_body
+\end_document

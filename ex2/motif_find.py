@@ -5,7 +5,7 @@ from itertools import groupby
 
 from scipy.special import logsumexp
 
-
+from copy import deepcopy
 
 def load_matrix(path: str):
     """
@@ -17,15 +17,19 @@ def load_matrix(path: str):
     """
 
     logquad = np.log(0.25)
-
-    mat = [ dict( { 'A' :logquad, 'T' :logquad, 'C' :logquad, 'G' :logquad} ) ]
+    mat = [ dict( { '^' : -np.inf, '$' : -np.inf,\
+         'A' :logquad, 'T' :logquad, 'C' :logquad, 'G' :logquad} ) ]
     file = open(path, 'r')
     alphabet = file.readline().split()
     for row in file.readlines():
         mat.append(dict())
         for char, val in zip(alphabet, row.split()):
             mat[-1][char] =  np.log(float(val))
-    mat.append( dict( { 'A' :logquad, 'T' :logquad, 'C' :logquad, 'G' :logquad} ))
+        for char in ['^', '$']:
+            mat[-1][char] = -np.inf
+    mat.append(  deepcopy(mat[0]) )
+    begin, end = ( { key : -np.inf for key in mat[0].keys() } for _ in range(2))
+    begin['$'], end['^'] = 0, 0
     return mat
 
 def fastaread(fasta_name):
@@ -38,37 +42,29 @@ def fastaread(fasta_name):
     faiter = (x[1] for x in groupby(f, lambda line: line.startswith(">")))
     for header in faiter:
         header = next(header)[1:].strip()
-        seq = "".join(s.strip() for s in next(faiter))
+        seq = "$" + "".join(s.strip() for s in next(faiter)) + "^"
+        print(seq)
         yield header, seq
 
-def forward(X, emission, tau, q):
+def forward(X, emission, tau):
     n, m = len(X), len(tau)    
-    F = np.ones( shape=(n+2,m) ) * -np.inf
-    
-    # for l in range(m):
-    F[0][0] = np.log(q)     #+  emission[0][X[0]]
-    F[0][-1] = np.log(1- q)   #+ emission[-1][X[0]]
-    
-    for i in range(1,n+1):
+    F = np.ones( shape=(n,m) ) * -np.inf
+    F[0][0] = emission[0][X[0]]    
+    for i in range(1,n):
         for l in range(m):
-            F[i][l] = emission[l][X[i-1]] + ( logsumexp( F[i-1] + (tau.T)[l]))
-    
-    F[-1][-1] = F[-2][-1] +  tau[0][1] - tau[0][0]
-    # F[0][0] =  logsumexp(np.array([np.log(q) + F[1][0], np.log(1- q) + F[1][-1]]))
+            F[i][l] = emission[l][X[i]] + ( logsumexp( F[i-1] + (tau.T)[l]))
+                
     return np.exp(F)
 
-def backward(X, emission, tau, q):
+def backward(X, emission, tau):
     n, m = len(X), len(tau)
-    B = np.ones(shape=(n+2,m)) * -np.inf 
-    
-    B[n+1][m-1] = tau[0][1] - tau[0][0] 
-    
-    for i in reversed(range(1, n+2)):
+    B = np.ones(shape=(n,m)) * -np.inf     
+    B[n-1][m-1] = emission[m-1][X[n-1]] 
+    for i in reversed(range(1, n-1)):
         for l in range(m):
-            emission_k = np.array( [ emission[k][X[i-2]] for k in range(m) ]) 
+            emission_k = np.array( [ emission[k][X[i-1]] for k in range(m) ]) 
             B[i-1][l] =  logsumexp(tau[l] + emission_k + B[i])
 
-    B[0][0] =  logsumexp(np.array([np.log(q) + B[1][0], np.log(1- q) + B[1][-1]])) 
     return np.exp(B)
 
 def printHiddens(X, emission, tau, states):
@@ -91,26 +87,22 @@ def printHiddens(X, emission, tau, states):
         print()
 
 
-def posterior(X, emission, tau, q):
-    F = np.log(forward(X, emission, tau, q))
-    B = np.log(backward(X, emission, tau, q))
-    states = np.argmax((F[0:-1,:] + B[1:,:])[1:], axis=1)
+def posterior(X, emission, tau):
+    F = np.log(forward(X, emission, tau))
+    B = np.log(backward(X, emission, tau))
+    states = np.argmax((F[1:-2,:] + B[1:-2,:]), axis=1)
     printHiddens(X, emission, tau, states)
 
-def viterbi(X, emission, tau, q):
+def viterbi(X, emission, tau):
     def vitforward():
         n, m = len(X), len(tau)    
-        F = np.ones(shape=(n,m) ) * -np.inf
-        P = np.zeros(shape=(n,m) )
-        
-        F[0][0] = np.log(q) + emission[0][X[0]]
-        F[0][-1] = np.log(1- q) + emission[-1][X[0]]
-
+        F = np.ones( shape=(n,m) ) * -np.inf
+        P = np.zeros(shape=(n,m))
+        F[0][0] = emission[0][X[0]]    
         for i in range(1,n):
             for l in range(m):
-                F[i][l] =  np.max( emission[l][X[i]] + F[i-1] + (tau.T)[l])
+                F[i][l] = emission[l][X[i]] + ( logsumexp( F[i-1] + (tau.T)[l]))                    
                 P[i][l] = int(np.argmax( emission[l][X[i]] + F[i-1] + (tau.T)[l]))
-        F[-1][-1] += tau[0][1]
         return np.exp(F), P
 
     F, P = vitforward()
@@ -140,28 +132,31 @@ def main():
     # TODO: add transition from the first to the end with q probability.
     # #############################
     tau = np.ones( (len(emission), len(emission))) * -np.inf
-    tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
-    tau[-1][-1] = np.log(1-p) #np.log(p)
-
-    for i in range(1,len(tau)-1): 
+    tau[1][1], tau[1][2] = np.log(1-p), np.log(p)
+    tau[-2][-2] = np.log(1-p) #np.log(p)
+    tau[-2][-1] = np.log(p)
+    tau[0][1]   = np.log(q)
+    tau[0][-2]  = np.log(1-q)
+    
+    for i in range(2,len(tau)-2): 
         tau[i][i+1] = 0
 
     tau = np.array(tau)
 
 
     if args.alg == 'viterbi':
-        viterbi(X, emission, tau, q)
+        viterbi(X, emission, tau)
         
     elif args.alg == 'forward':
-        ret =  forward(X, emission, tau, q)
+        ret =  forward(X, emission, tau)
         print(np.log(ret[-1][-1]))
 
     elif args.alg == 'backward':
-        ret = backward(X, emission, tau, q)
+        ret = backward(X, emission, tau)
         print(np.log(ret[0][0]))
 
     elif args.alg == 'posterior':
-        posterior(X, emission, tau, q)
+        posterior(X, emission, tau)
         
 
 

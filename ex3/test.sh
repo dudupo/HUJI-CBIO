@@ -1,7 +1,7 @@
 # python3 ZOOPS_EM.py ./seqs_CCGG.fasta CCGG 0.05 0.9 0.1 0.1
 rm generated_tests.sh
 # python3  -W ignore create_zoops_test.py ./seqs_CCGG.fasta AAAAAAA 0.3 0.99 0.0 1e-10
-python3  -W ignore create_zoops_test.py ./seqs_CCGG.fasta AATTTTAA 0.05 0.99 0.0 1e-10
+python3  -W ignore create_zoops_test.py ./seqs_ATTA.fasta ATTA 0.05 0.9 0.1 0.1
 
 # python3  -W ignore create_zoops_test.py ./seqs_CCGG.fasta CCGG 0.05 0.1 0.1 0.1
 # python3  -W ignore create_zoops_test.py ./seqs_CCGG.fasta CCGG 0.05 0.2 0.1 0.1
