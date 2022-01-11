@@ -60,7 +60,7 @@ def compute_log_likelihood_for_sequences(sequences,tau,p,q,emissiones):
     :param q: probability to go out of a motif
     :return: log likelihood of the sequences given tau p q
     """
-    print()
+    # print()
 
     ret = [ np.log(forward(seq,emissiones,tau))[-1][-1] for seq in sequences ]
     # print(tau)

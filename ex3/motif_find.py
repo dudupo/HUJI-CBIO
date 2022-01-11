@@ -217,7 +217,7 @@ def _viterbi(X, emission, tau, q):
         states=  [ int(P[-i][states[0]]) ] + states  
         
     for i,state in enumerate(states):
-        if (state > 0) and (state < (len(tau)-1)):
+        if (state > 1) and (state < (len(tau)-2)):
             return i               
     return -1
 
