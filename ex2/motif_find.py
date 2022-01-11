@@ -30,7 +30,7 @@ def load_matrix(path: str):
     mat.append(  deepcopy(mat[0]) )
     begin, end = ( { key : -np.inf for key in mat[0].keys() } for _ in range(2))
     begin['$'], end['^'] = 0, 0
-    return mat
+    return [begin] + mat + [end]
 
 def fastaread(fasta_name):
     """
@@ -43,7 +43,6 @@ def fastaread(fasta_name):
     for header in faiter:
         header = next(header)[1:].strip()
         seq = "$" + "".join(s.strip() for s in next(faiter)) + "^"
-        print(seq)
         yield header, seq
 
 def forward(X, emission, tau):
@@ -58,12 +57,12 @@ def forward(X, emission, tau):
 
 def backward(X, emission, tau):
     n, m = len(X), len(tau)
-    B = np.ones(shape=(n,m)) * -np.inf     
-    B[n-1][m-1] = emission[m-1][X[n-1]] 
-    for i in reversed(range(1, n-1)):
+    B = np.ones(shape=(n,m)) * -np.inf   
+    B[n-1][m-1] = 0 #emission[m-1][X[n-1]] 
+    for i in reversed(range(1, n)):
         for l in range(m):
-            emission_k = np.array( [ emission[k][X[i-1]] for k in range(m) ]) 
-            B[i-1][l] =  logsumexp(tau[l] + emission_k + B[i])
+            emission_k = np.array( [ emission[k][X[i]] for k in range(m) ]) 
+            B[i-1][l] = logsumexp(emission_k + tau[l] + B[i])
 
     return np.exp(B)
 
@@ -71,7 +70,7 @@ def printHiddens(X, emission, tau, states):
     ret = ""
     # print(states)
     for state in states:
-        if (state > 0) and (state < (len(tau)-1)): 
+        if (state > 1) and (state < (len(tau)-2)): 
             ret += "M"
         else:
             ret += "B"
@@ -81,7 +80,7 @@ def printHiddens(X, emission, tau, states):
         return [_str[i:i + chunk_size] for i in range(0, chunks, chunk_size)]
 
     for upper_line, bottom_line in \
-        zip(split_to_lines(ret), split_to_lines(X)):
+        zip(split_to_lines(ret[1:-1]), split_to_lines(X[1:-1])):
         print(upper_line)
         print(bottom_line)
         print()
@@ -90,25 +89,25 @@ def printHiddens(X, emission, tau, states):
 def posterior(X, emission, tau):
     F = np.log(forward(X, emission, tau))
     B = np.log(backward(X, emission, tau))
-    states = np.argmax((F[1:-2,:] + B[1:-2,:]), axis=1)
+    states = np.argmax((F + B), axis=1)
     printHiddens(X, emission, tau, states)
 
 def viterbi(X, emission, tau):
     def vitforward():
         n, m = len(X), len(tau)    
-        F = np.ones( shape=(n,m) ) * -np.inf
+        V = np.ones( shape=(n,m) ) * -np.inf
         P = np.zeros(shape=(n,m))
-        F[0][0] = emission[0][X[0]]    
+        V[0][0] = emission[0][X[0]]    
         for i in range(1,n):
             for l in range(m):
-                F[i][l] = emission[l][X[i]] + ( logsumexp( F[i-1] + (tau.T)[l]))                    
-                P[i][l] = int(np.argmax( emission[l][X[i]] + F[i-1] + (tau.T)[l]))
-        return np.exp(F), P
+                V[i][l] = emission[l][X[i]] + ( np.max( V[i-1] + (tau.T)[l]))                    
+                P[i][l] = int( np.argmax( V[i-1] + (tau.T)[l]) )
+        return V, P
 
-    F, P = vitforward()
+    V, P = vitforward()
     states = [len(tau)-1]
-    for i in range(len(X)-1):
-        states=  [ int(P[-i-1][states[0]]) ] + states    
+    for i in range(1,len(X)):
+        states=  [ int(P[-i][states[0]]) ] + states  
     printHiddens(X, emission, tau, states)
     
 def main():
@@ -125,7 +124,7 @@ def main():
     args = parser.parse_args()
     
     X, p, q = str(args.seq), float(args.p), float(args.q)
-
+    X = "$" + X + "^"
     emission = load_matrix( args.initial_emission )
 
     # #############################

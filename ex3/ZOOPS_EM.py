@@ -4,11 +4,11 @@ from motif_find import transition_event, generate_tau, sample , forward, _viterb
 import argparse
 import numpy as np
 from scipy.special import logsumexp
-
+from copy import deepcopy
 
 def expectaion(seqs, emission, tau ,q, parity=True):
     '''given distributions returns the expectaion of the stats'''
-    p = np.exp(tau[0][1])
+    p = np.exp(tau[1][2])
 
     S, emit =  transition_event(seqs[0], emission, tau, q)
     S, emit = np.exp(S), np.exp(emit)
@@ -24,7 +24,6 @@ def expectaion(seqs, emission, tau ,q, parity=True):
     p = S[2]/(S[2] + S[3])
     retemissions = emission
     # print("q:{0}, p:{1}".format(q, p))
-
     emissiontilde = emit 
     temp =  np.sum(emissiontilde, axis=1)
     for j in range(len(emissiontilde)):
@@ -33,9 +32,22 @@ def expectaion(seqs, emission, tau ,q, parity=True):
 
     retemissions = [ ]
     retemissions.append({ a : np.log(0.25) for a in ['A','G', 'C', 'T'] })
-    for k in range(len(tau)-2):
+    retemissions[-1]["$"] = -np.inf
+    retemissions[-1]["^"] = -np.inf
+
+    retemissions = [ {a : -np.inf for a in retemissions[0].keys() } ] + retemissions
+    retemissions[0]["$"] = 0
+    retemissions[0]["^"] = -np.inf
+    for k in range(len(tau)-4):
         retemissions.append({ a : np.log(emissiontilde[k][AGCT(a)]) for a in ['A','G', 'C', 'T'] })
+        retemissions[-1]["$"] = -np.inf
+        retemissions[-1]["^"] = -np.inf
     retemissions.append({ a : np.log(0.25) for a in ['A','G', 'C', 'T'] })
+    retemissions[-1]["$"] = -np.inf
+    retemissions[-1]["^"] = -np.inf
+    retemissions =  retemissions + [ {a : -np.inf for a in retemissions[0].keys() } ]
+    retemissions[-1]["^"] = 0
+    retemissions[-1]["$"] = -np.inf
     return p,q, retemissions
 
 def compute_log_likelihood_for_sequences(sequences,tau,p,q,emissiones):
@@ -48,8 +60,11 @@ def compute_log_likelihood_for_sequences(sequences,tau,p,q,emissiones):
     :param q: probability to go out of a motif
     :return: log likelihood of the sequences given tau p q
     """
-    return np.sum([ np.log(forward(seq,emissiones,tau,q))[-1][-1] for seq in sequences ])
+    print()
 
+    ret = [ np.log(forward(seq,emissiones,tau))[-1][-1] for seq in sequences ]
+    # print(tau)
+    return np.sum(ret)
 
 
 
@@ -58,21 +73,26 @@ def BaumWelch(seqs, emission, tau, q, convergenceThr):
     result_history = []
     result_history.append(
         compute_log_likelihood_for_sequences(
-            seqs, tau, np.exp(tau[0][1]), q, emission))
+            seqs, tau, np.exp(tau[1][2]), q, emission))
 
     p, q, emission = expectaion(seqs, emission, tau, q)    
-    tau[0][0], tau[0][1] = np.log(1 - p), np.log(p)
-    tau[-1][-1] = np.log(1 - p)
+    tau[1][1], tau[1][2] = np.log(1-p), np.log(p)
+    tau[-2][-2] = np.log(1-p) #np.log(p)
+    tau[-2][-1] = np.log(p)
+    tau[0][1]   = np.log(q)
+    tau[0][-2]  = np.log(1-q)
     result_history.append(
         compute_log_likelihood_for_sequences(
             seqs, tau, p, q, emission))
     # parity = not parity
 
     while (result_history[-1]-result_history[-2]) > convergenceThr:
-        # retemission, retp, retq = emission, np.exp(tau[0][1]), q
         p,q, emission = expectaion(seqs, emission, tau ,q)
-        tau[0][0], tau[0][1] = np.log(1-p), np.log(p)
-        tau[-1][-1] = np.log(1-p)
+        tau[1][1], tau[1][2] = np.log(1-p), np.log(p)
+        tau[-2][-2] = np.log(1-p) #np.log(p)
+        tau[-2][-1] = np.log(p)
+        tau[0][1]   = np.log(q)
+        tau[0][-2]  = np.log(1-q)
         result_history.append(
             compute_log_likelihood_for_sequences(
                 seqs,tau,p,q,emission))
@@ -136,7 +156,7 @@ def write_motif_tsv(_file_path, seed, alpha):
             probabilities[charter] = alpha
 
 def readseqs( _file_path ):
-    return [s[:-1] for s in open(_file_path, 'r').readlines()[1::2] if len(s) > 1 ]
+    return [ "$" + s[:-1] + "^" for s in open(_file_path, 'r').readlines()[1::2] if len(s) > 1 ]
 
 def main():
     args = parse_args()

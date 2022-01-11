@@ -17,3 +17,4 @@ python3  -W ignore create_zoops_test.py ./seqs_ATTA.fasta ATTA 0.05 0.9 0.1 0.1
 cat ./generated_tests.sh 
 chmod 777 ./generated_tests.sh
 ./generated_tests.sh
+cat ./ll_history.txt
