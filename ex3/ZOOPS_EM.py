@@ -109,9 +109,9 @@ def dump_results(result_history, emissiones, p, q, sequences,tau):
             history_file.write(f"\n{str(i,)}")
     with open("motif_profile.txt","w+") as motif_profile_file:
         for base in ["A","C","G","T"]:
-            for s in emissiones[1:-2]:
+            for s in emissiones[2:-3]:
                 motif_profile_file.write(f"{str(round(np.exp(s[base]),2))}\t")
-            motif_profile_file.write(f"{str(round(np.exp(emissiones[-2][base]),2))}")
+            motif_profile_file.write(f"{str(round(np.exp(emissiones[-3][base]),2))}")
             motif_profile_file.write("\n")
         motif_profile_file.write(f"{str(round(q,4))}\n")
         motif_profile_file.write(f"{str(round(p, 4))}")
