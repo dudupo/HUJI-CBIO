@@ -163,7 +163,7 @@
 \begin_layout Standard
 \begin_inset Formula 
 \begin{align*}
-P\left(t|a,b\right) & =\prod_{i}\pi_{a_{i}}\left[e^{t\boldsymbol{R}}\right]_{a_{i},b_{j}}=\left(\prod_{\xi=a_{i}=b_{j}}\frac{\pi_{\xi}}{4}\left(1+3e^{-4\alpha t}\right)\right)\left(\prod_{\xi\neq\eta}\frac{\pi_{\xi}}{4}\left(1-3e^{-4\alpha t}\right)\right)=\\
+P\left(t|a,b\right) & =\prod_{i}\pi_{a_{i}}\left[e^{t\boldsymbol{R}}\right]_{a_{i},b_{j}}=\left(\prod_{\xi=a_{i}=b_{j}}\frac{\pi_{\xi}}{4}\left(1+3e^{-4\alpha t}\right)\right)\left(\prod_{\xi\neq\eta}\frac{\pi_{\xi}}{4}\left(1-e^{-4\alpha t}\right)\right)=\\
  & =\left(\prod_{\xi}\left(\frac{\pi_{\xi}}{4}\left(1+3e^{-4\alpha t}\right)\right)^{N_{\xi,\xi}}\right)\left(\left(\prod_{\xi\neq\eta}\frac{\pi_{\xi}}{4}\left(1-e^{-4\alpha t}\right)\right)^{N_{\xi,\eta}}\right)
 \end{align*}
 
@@ -258,7 +258,7 @@ f & =\left(\prod A_{i}\right)\Rightarrow\partial f=\sum_{j}\left(\prod_{i\ne j}A
 \begin_inset Formula $\sum_{\xi}N_{\xi,\xi}=0$
 \end_inset
 
- )כל הערכים תמיד משתנים(.
+ )כל הערכים תמיד משתנים(, נקבל כי הנגזרתתמיד חיובית 
 \end_layout
 
 \begin_layout Subsection*
